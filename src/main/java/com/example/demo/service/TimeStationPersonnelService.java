@@ -27,44 +27,50 @@ public class TimeStationPersonnelService {
     public String generalKey;
     @Value("${realTimeKey}")
     public String realTimeKey;
+
     TimeStationPersonnelRepository timeStationPersonnelRepository;
 
-    // 서울시 지하철 호선별 역별 시간대별 승하차 인원 정보
-    public void peopleInformationBySeoulAtTime() {
+    // 서울시 지하철 호선별 역별 시간대별 승하차 인원 정보 읽기
+    public String peopleInformationBySeoulAtTimeRead() throws IOException {
+        StringBuilder urlBuilder = new StringBuilder("http://openapi.seoul.go.kr:8088");
+        urlBuilder.append("/" + URLEncoder.encode(generalKey, "UTF-8"));
+        urlBuilder.append("/" + URLEncoder.encode("json", "UTF-8"));
+        urlBuilder.append("/" + URLEncoder.encode("CardSubwayTime", "UTF-8"));
+        urlBuilder.append("/" + URLEncoder.encode("1", "UTF-8"));
+        urlBuilder.append("/" + URLEncoder.encode("5", "UTF-8"));
+
+        /* 서비스별 추가 요청인자*/
+        urlBuilder.append("/" + URLEncoder.encode("202205", "UTF-8"));//월별, 최신 2022년 5월까지
+
+        URL url = new URL(urlBuilder.toString());
+        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+        conn.setRequestMethod("GET");
+        conn.setRequestProperty("Content-type", "application/json");
+        System.out.println("Response code: " + conn.getResponseCode()); /* 연결에 대한 확인*/
+        BufferedReader rd;
+
+        // 서비스코드가 정상이면 200~300사이의 숫자
+        if (conn.getResponseCode() >= 200 && conn.getResponseCode() <= 300) {
+            rd = new BufferedReader(new InputStreamReader(conn.getInputStream(), "UTF-8"));
+        } else {
+            rd = new BufferedReader(new InputStreamReader(conn.getErrorStream(), "UTF-8"));
+        }
+        StringBuilder stringBuilder = new StringBuilder();
+        String line;
+        while ((line = rd.readLine()) != null) {
+            stringBuilder.append(line);
+        }
+        rd.close();
+        conn.disconnect();
+        return stringBuilder.toString();
+    }
+
+    // 서울시 지하철 호선별 역별 시간대별 승하차 인원 정보 저장
+    public void peopleInformationBySeoulAtTimeSave(String json) {
         try {
-            StringBuilder urlBuilder = new StringBuilder("http://openapi.seoul.go.kr:8088");
-            urlBuilder.append("/" + URLEncoder.encode(generalKey, "UTF-8"));
-            urlBuilder.append("/" + URLEncoder.encode("json", "UTF-8"));
-            urlBuilder.append("/" + URLEncoder.encode("CardSubwayTime", "UTF-8"));
-            urlBuilder.append("/" + URLEncoder.encode("1", "UTF-8"));
-            urlBuilder.append("/" + URLEncoder.encode("5", "UTF-8"));
-
-            /* 서비스별 추가 요청인자*/
-            urlBuilder.append("/" + URLEncoder.encode("202205", "UTF-8"));//월별, 최신 2022년 5월까지
-
-            URL url = new URL(urlBuilder.toString());
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-            conn.setRequestMethod("GET");
-            conn.setRequestProperty("Content-type", "application/json");
-            System.out.println("Response code: " + conn.getResponseCode()); /* 연결에 대한 확인*/
-            BufferedReader rd;
-
-            // 서비스코드가 정상이면 200~300사이의 숫자
-            if (conn.getResponseCode() >= 200 && conn.getResponseCode() <= 300) {
-                rd = new BufferedReader(new InputStreamReader(conn.getInputStream(), "UTF-8"));
-            } else {
-                rd = new BufferedReader(new InputStreamReader(conn.getErrorStream(), "UTF-8"));
-            }
-            StringBuilder sb = new StringBuilder();
-            String line;
-            while ((line = rd.readLine()) != null) {
-                sb.append(line);
-            }
-            rd.close();
-            conn.disconnect();
             JSONParser jsonParser = new JSONParser();
 
-            JSONObject jsonObject = (JSONObject) jsonParser.parse(sb.toString());
+            JSONObject jsonObject = (JSONObject) jsonParser.parse(json);
             JSONObject cardSubwayTime = (JSONObject) jsonObject.get("CardSubwayTime");
 
             int listTotalCount = Long.valueOf((Long) cardSubwayTime.get("list_total_count")).intValue() ;
@@ -106,13 +112,10 @@ public class TimeStationPersonnelService {
                 }
 
             }
+        }catch (Exception e) {
 
-        } catch (Exception e) {
-            e.printStackTrace();
         }
-
     }
-
     // 실시간 열차 도착정보
     public void trainArrivalTnformation() throws IOException {
         StringBuilder urlBuilder = new StringBuilder("http://openapi.seoul.go.kr:8088");

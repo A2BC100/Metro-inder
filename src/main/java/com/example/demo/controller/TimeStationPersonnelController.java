@@ -12,7 +12,7 @@ import java.io.IOException;
 public class TimeStationPersonnelController {
     TimeStationPersonnelService timeStationPersonnelService;
     @GetMapping("/seoulSubwayTimeZoneInformationSave")
-    public void test() throws IOException {
-        timeStationPersonnelService.peopleInformationBySeoulAtTime();
+    public void seoulSubwayTimeZoneInformationSave() throws IOException {
+        timeStationPersonnelService.peopleInformationBySeoulAtTimeRead();
     }
 }
