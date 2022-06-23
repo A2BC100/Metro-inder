@@ -49,25 +49,22 @@ public class ApiService {
         } else {
             rd = new BufferedReader(new InputStreamReader(conn.getErrorStream()));
         }
-        String result = rd.readLine();
-//        StringBuilder sb = new StringBuilder();
-//        String line;
-//        while ((line = rd.readLine()) != null) {
-//            sb.append(line);
-//        }
+        StringBuilder sb = new StringBuilder();
+        String line;
+        while ((line = rd.readLine()) != null) {
+            sb.append(line);
+        }
         rd.close();
         conn.disconnect();
-        JSONParser jsonParser = new JSONParser();
-        try {
-            JSONObject jsonObject = (JSONObject) jsonParser.parse(result);
-            JSONObject fourRideNum = (JSONObject) jsonObject.get("FOUR_RIDE_NUM");
-            System.out.println(fourRideNum);
-        }catch (Exception e) {
-            e.printStackTrace();
-        }
-
-
-        System.out.println(result);
+//        JSONParser jsonParser = new JSONParser();
+//        try {
+//            JSONObject jsonObject = (JSONObject) jsonParser.parse(result);
+//            JSONObject fourRideNum = (JSONObject) jsonObject.get("FOUR_RIDE_NUM");
+//            System.out.println(fourRideNum);
+//        }catch (Exception e) {
+//            e.printStackTrace();
+//        }
+//        System.out.println(result);
 
     }
 
