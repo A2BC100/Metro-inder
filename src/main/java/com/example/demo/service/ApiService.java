@@ -32,7 +32,7 @@ public class ApiService {
             urlBuilder.append("/" + URLEncoder.encode("json", "UTF-8"));
             urlBuilder.append("/" + URLEncoder.encode("CardSubwayTime", "UTF-8")); /*서비스명, 대소문자 구분*/
             urlBuilder.append("/" + URLEncoder.encode("1", "UTF-8"));
-            urlBuilder.append("/" + URLEncoder.encode("5", "UTF-8"));
+            urlBuilder.append("/" + URLEncoder.encode("1000", "UTF-8"));
             // 상위 5개는 필수적으로 순서바꾸지 않고 호출해야 합니다.
 
             /* 서비스별 추가 요청인자들*/
@@ -62,15 +62,19 @@ public class ApiService {
 
             JSONObject jsonObject = (JSONObject) jsonParser.parse(sb.toString());
             JSONObject cardSubwayTime = (JSONObject) jsonObject.get("CardSubwayTime");
-            JSONObject listTotalCount = (JSONObject) jsonObject.get("list_total_count");
-//            System.out.println(jsonObject);
+
+            int listTotalCount = Long.valueOf((Long) cardSubwayTime.get("list_total_count")).intValue() ;
+            if(listTotalCount > 1000) {
+
+            }
+
             JSONArray jsonArr = (JSONArray) cardSubwayTime.get("row");
             System.out.println(cardSubwayTime);
-            //System.out.println(listTotalCount);
-            System.out.println(jsonArr);
+            System.out.println(listTotalCount);
             for(int i=0;i<jsonArr.size();i++){
                 JSONObject row = (JSONObject)jsonArr.get(i);
                 String subStaNm = (String)row.get("SUB_STA_NM");
+
                 System.out.println(subStaNm);
             }
 
