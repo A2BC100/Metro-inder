@@ -14,6 +14,8 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.util.ArrayList;
+import java.util.List;
 
 @Component
 @Service
@@ -71,11 +73,14 @@ public class ApiService {
             JSONArray jsonArr = (JSONArray) cardSubwayTime.get("row");
             System.out.println(cardSubwayTime);
             System.out.println(listTotalCount);
+            List<List<JSONObject>> jsonSameStationList = new ArrayList<>();
             for(int i=0;i<jsonArr.size();i++){
-                JSONObject row = (JSONObject)jsonArr.get(i);
-                String subStaNm = (String)row.get("SUB_STA_NM");
+                for(int j = 0; j<jsonArr.size(); j++) {
+                    JSONObject row = (JSONObject)jsonArr.get(i);
+                    String subStaNm = (String)row.get("SUB_STA_NM");
 
-                System.out.println(subStaNm);
+                }
+
             }
 
         } catch (Exception e) {
