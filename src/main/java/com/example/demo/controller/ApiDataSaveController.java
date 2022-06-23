@@ -13,10 +13,9 @@ import java.io.IOException;
 public class ApiDataSaveController {
     ApiService apiService;
     @GetMapping("/test")
-    public String test(Model model) throws IOException {
-        apiService.
+    public String test() throws IOException {
         apiService.peopleInformationBySeoulAtTime(); //- 결과 확인 O
-        //jsonReader.trainArrivalTnformation(); //- 실시간 인증키가 나오기 전까지는 사용 및 확인 불가
+        //apiService.trainArrivalTnformation(); //- 실시간 인증키가 나오기 전까지는 사용 및 확인 불가
         return "test";
     }
 }

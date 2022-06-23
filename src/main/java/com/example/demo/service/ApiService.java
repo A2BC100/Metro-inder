@@ -19,9 +19,9 @@ import java.net.URLEncoder;
 public class ApiService {
 
     @Value("${generalKey}")
-    String generalKey;
+    public String generalKey;
     @Value("${realTimeKey}")
-    String realTimeKey;
+    public String realTimeKey;
 
     // 서울시 지하철 호선별 역별 시간대별 승하차 인원 정보
     public void peopleInformationBySeoulAtTime() throws IOException {
