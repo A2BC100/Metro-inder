@@ -38,4 +38,4 @@ out/
 
 
 ### 프로필 ###
-application-cjh.properties
+*.properties
