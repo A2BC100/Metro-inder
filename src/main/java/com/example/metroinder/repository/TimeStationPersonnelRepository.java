@@ -1,6 +1,6 @@
-package com.example.demo.repository;
+package com.example.metroinder.repository;
 
-import com.example.demo.model.TimeStationPersonnel;
+import com.example.metroinder.model.TimeStationPersonnel;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface TimeStationPersonnelRepository extends JpaRepository<String, TimeStationPersonnel> {
