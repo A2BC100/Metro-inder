@@ -1,4 +1,4 @@
-package com.example.demo.model;
+package com.example.metroinder.model;
 
 import lombok.Builder;
 import lombok.Getter;
