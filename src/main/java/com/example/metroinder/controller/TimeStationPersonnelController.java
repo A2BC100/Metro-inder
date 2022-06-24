@@ -4,18 +4,27 @@ package com.example.metroinder.controller;
 import com.example.metroinder.service.TimeStationPersonnelService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
+import java.util.Map;
 
 @Controller
 @RequiredArgsConstructor
 public class TimeStationPersonnelController {
     private final TimeStationPersonnelService timeStationPersonnelService;
-    @GetMapping("/seoulSubwayTimeZoneInformationSave")
-    public String seoulSubwayTimeZoneInformationSave() throws IOException {
+
+    @PostMapping("/seoulSubwayTimeZoneInformationSave")
+    public void seoulSubwayTimeZoneInformationSave() throws IOException {
         String json = timeStationPersonnelService.peopleInformationBySeoulAtTimeRead();
         timeStationPersonnelService.peopleInformationBySeoulAtTimeSave(json);
-        return "test";
+    }
+
+    @GetMapping("/returnPeopleCount")
+    @ResponseBody
+    public Map returnPeopleCount(@RequestParam("stationName") String stationName) {
+        Map json = timeStationPersonnelService.findSameStationPeople(stationName);
+        return json;
     }
 }

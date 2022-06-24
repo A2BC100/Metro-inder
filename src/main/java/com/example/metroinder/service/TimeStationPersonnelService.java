@@ -20,7 +20,9 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Component
 @Service
@@ -42,7 +44,7 @@ public class TimeStationPersonnelService {
         urlBuilder.append("/" + URLEncoder.encode("json", "UTF-8"));
         urlBuilder.append("/" + URLEncoder.encode("CardSubwayTime", "UTF-8"));
         urlBuilder.append("/" + URLEncoder.encode("1", "UTF-8"));
-        urlBuilder.append("/" + URLEncoder.encode("1000", "UTF-8"));
+        urlBuilder.append("/" + URLEncoder.encode("999", "UTF-8"));
 
         /* 서비스별 추가 요청인자*/
         urlBuilder.append("/" + URLEncoder.encode("202205", "UTF-8"));//월별, 최신 2022년 5월까지
@@ -79,16 +81,16 @@ public class TimeStationPersonnelService {
 
             int listTotalCount = Long.valueOf((Long) cardSubwayTime.get("list_total_count")).intValue();
 
-//            if(listTotalCount > 1000) {
-//
-//            }
-
             JSONArray jsonArr = (JSONArray) cardSubwayTime.get("row");
             List<TimeStationPersonnelDto> jsonSameStationDtoList = new ArrayList<>();
             for (int count = 0; count < jsonArr.size(); count++) {
                 JSONObject row = (JSONObject) jsonArr.get(count);
+                String station = (String) row.get("SUB_STA_NM");
+                if(station.equals("서울역")) {
+                    station = "서울";
+                }
                 TimeStationPersonnelDto timeStationPersonnelDto = TimeStationPersonnelDto.builder()
-                        .station((String) row.get("SUB_STA_NM"))
+                        .station(station)
                         .oneRide((int) Math.round((double) row.get("ONE_RIDE_NUM")))
                         .twoRide((int) Math.round((double) row.get("TWO_RIDE_NUM")))
                         .threeRide((int) Math.round((double) row.get("THREE_RIDE_NUM")))
@@ -118,7 +120,7 @@ public class TimeStationPersonnelService {
             }
             TimeStationPersonnelDto timeStationPersonnelDto = new TimeStationPersonnelDto();
             List<TimeStationPersonnel> jsonSameStationList = timeStationPersonnelDto.toEntityList(jsonSameStationDtoList);
-            for(TimeStationPersonnel timeStationPersonnel : jsonSameStationList) {
+            for (TimeStationPersonnel timeStationPersonnel : jsonSameStationList) {
                 timeStationPersonnelRepository.save(timeStationPersonnel);
             }
         } catch (Exception e) {
@@ -126,6 +128,39 @@ public class TimeStationPersonnelService {
         }
     }
 
-    // 실시간 열차 도착정보
-
+    public Map findSameStationPeople(String data) {
+        Map json = new HashMap<String, Object>();
+        List <TimeStationPersonnelRepository.SameStationPeople> sameStationPeoplelist = timeStationPersonnelRepository.findSameStationPeople();
+        for(TimeStationPersonnelRepository.SameStationPeople sameStationPeople : sameStationPeoplelist) {
+            String station = sameStationPeople.getStation();
+            if(station.equals(data)) {
+                json.put("station", sameStationPeople.getStation());
+                json.put("oneRide", Long.valueOf(sameStationPeople.getOneRide()).intValue());
+                json.put("twoRide", Long.valueOf(sameStationPeople.getTwoRide()).intValue());
+                json.put("threeRide", Long.valueOf(sameStationPeople.getThreeRide()).intValue());
+                json.put("fourRide", Long.valueOf(sameStationPeople.getFourRide()).intValue());
+                json.put("fiveRide", Long.valueOf(sameStationPeople.getFiveRide()).intValue());
+                json.put("sixRide", Long.valueOf(sameStationPeople.getSixRide()).intValue());
+                json.put("sevenRide", Long.valueOf(sameStationPeople.getSevenRide()).intValue());
+                json.put("eightRide", Long.valueOf(sameStationPeople.getEightRide()).intValue());
+                json.put("nineRide", Long.valueOf(sameStationPeople.getNineRide()).intValue());
+                json.put("tenRide", Long.valueOf(sameStationPeople.getTenRide()).intValue());
+                json.put("elevenRide", Long.valueOf(sameStationPeople.getElevenRide()).intValue());
+                json.put("twelveRide", Long.valueOf(sameStationPeople.getTwelveRide()).intValue());
+                json.put("thirteenRide", Long.valueOf(sameStationPeople.getThirteenRide()).intValue());
+                json.put("fourteenRide", Long.valueOf(sameStationPeople.getFourteenRide()).intValue());
+                json.put("fifteenRide", Long.valueOf(sameStationPeople.getFifteenRide()).intValue());
+                json.put("sixteenRide", Long.valueOf(sameStationPeople.getSixteenRide()).intValue());
+                json.put("seventeenRide", Long.valueOf(sameStationPeople.getSeventeenRide()).intValue());
+                json.put("eighteenRide", Long.valueOf(sameStationPeople.getEighteenRide()).intValue());
+                json.put("nineteenRide", Long.valueOf(sameStationPeople.getNineteenRide()).intValue());
+                json.put("twentyRide", Long.valueOf(sameStationPeople.getTwentyRide()).intValue());
+                json.put("twentyoneRide", Long.valueOf(sameStationPeople.getTwentyoneRide()).intValue());
+                json.put("twentytwoRide", Long.valueOf(sameStationPeople.getTwentytwoRide()).intValue());
+                json.put("twentythreeRide", Long.valueOf(sameStationPeople.getTwentythreeRide()).intValue());
+                json.put("midnightRide", Long.valueOf(sameStationPeople.getMidnightRide()).intValue());
+            }
+        }
+        return json;
+    }
 }
