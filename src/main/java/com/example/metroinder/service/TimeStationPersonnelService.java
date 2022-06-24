@@ -1,8 +1,10 @@
 package com.example.metroinder.service;
 
 
+import com.example.metroinder.dto.TimeStationPersonnelDto;
+import com.example.metroinder.model.TimeStationPersonnel;
 import com.example.metroinder.repository.TimeStationPersonnelRepository;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -21,7 +23,7 @@ import java.util.List;
 
 @Component
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class TimeStationPersonnelService {
     @Value("${generalKey}")
     public String generalKey;
@@ -69,53 +71,58 @@ public class TimeStationPersonnelService {
     public void peopleInformationBySeoulAtTimeSave(String json) {
         try {
             JSONParser jsonParser = new JSONParser();
-
             JSONObject jsonObject = (JSONObject) jsonParser.parse(json);
             JSONObject cardSubwayTime = (JSONObject) jsonObject.get("CardSubwayTime");
 
-            int listTotalCount = Long.valueOf((Long) cardSubwayTime.get("list_total_count")).intValue() ;
+            int listTotalCount = Long.valueOf((Long) cardSubwayTime.get("list_total_count")).intValue();
+
 //            if(listTotalCount > 1000) {
 //
 //            }
 
             JSONArray jsonArr = (JSONArray) cardSubwayTime.get("row");
-            List<List<JSONObject>> jsonSameStationList = new ArrayList<>();
-            for(int i=0;i<jsonArr.size();i++){
-                for(int j = 0; j<jsonArr.size(); j++) {
-                    JSONObject row = (JSONObject)jsonArr.get(i);
-                    String subStaNm = (String)row.get("SUB_STA_NM");
-                    int oneRide = (int) Math.round((double)row.get("ONE_RIDE_NUM"));
-                    int twoRide = (int) Math.round((double)row.get("TWO_RIDE_NUM"));
-                    int threeRide = (int) Math.round((double)row.get("THREE_RIDE_NUM"));
-                    int fourRide = (int) Math.round((double)row.get("FOUR_RIDE_NUM"));
-                    int fiveRide = (int) Math.round((double)row.get("FIVE_RIDE_NUM"));
-                    int sixRide = (int) Math.round((double)row.get("SIX_RIDE_NUM"));
-                    int sevenRide = (int) Math.round((double)row.get("SEVEN_RIDE_NUM"));
-                    int eightRide = (int) Math.round((double)row.get("EIGHT_RIDE_NUM"));
-                    int nineRide = (int) Math.round((double)row.get("NINE_RIDE_NUM"));
-                    int tenRide = (int) Math.round((double)row.get("TEN_RIDE_NUM"));
-                    int elevenRide = (int) Math.round((double)row.get("ELEVEN_RIDE_NUM"));
-                    int twelveRide = (int) Math.round((double)row.get("TWELVE_RIDE_NUM"));
-                    int thirteenRide = (int) Math.round((double)row.get("THIRTEEN_RIDE_NUM"));
-                    int fourteenRide = (int) Math.round((double)row.get("FOURTEEN_RIDE_NUM"));
-                    int fifteenRide = (int) Math.round((double)row.get("FIFTEEN_RIDE_NUM"));
-                    int sixteenRide = (int) Math.round((double)row.get("SIXTEEN_RIDE_NUM"));
-                    int seventeenRide = (int) Math.round((double)row.get("SEVENTEEN_RIDE_NUM"));
-                    int eighteenRide = (int) Math.round((double)row.get("EIGHTEEN_RIDE_NUM"));
-                    int nineteenRide = (int) Math.round((double)row.get("NINETEEN_RIDE_NUM"));
-                    int twentyRide = (int) Math.round((double)row.get("TWENTY_RIDE_NUM"));
-                    int twentyoneRide = (int) Math.round((double)row.get("TWENTY_ONE_RIDE_NUM"));
-                    int twentytwoRide = (int) Math.round((double)row.get("TWENTY_TWO_RIDE_NUM"));
-                    int twentythreeRide = (int) Math.round((double)row.get("TWENTY_THREE_RIDE_NUM"));
-                    int midnightRide = (int) Math.round((double)row.get("MIDNIGHT_RIDE_NUM"));
-
-                }
-
+            List<TimeStationPersonnelDto> jsonSameStationDtoList = new ArrayList<>();
+            for (int count = 0; count < jsonArr.size(); count++) {
+                JSONObject row = (JSONObject) jsonArr.get(count);
+                TimeStationPersonnelDto timeStationPersonnelDto = TimeStationPersonnelDto.builder()
+                        .station((String) row.get("SUB_STA_NM"))
+                        .oneRide((int) Math.round((double) row.get("ONE_RIDE_NUM")))
+                        .twoRide((int) Math.round((double) row.get("TWO_RIDE_NUM")))
+                        .threeRide((int) Math.round((double) row.get("THREE_RIDE_NUM")))
+                        .fourRide((int) Math.round((double) row.get("FOUR_RIDE_NUM")))
+                        .fiveRide((int) Math.round((double) row.get("FIVE_RIDE_NUM")))
+                        .sixRide((int) Math.round((double) row.get("SIX_RIDE_NUM")))
+                        .sevenRide((int) Math.round((double) row.get("SEVEN_RIDE_NUM")))
+                        .eightRide((int) Math.round((double) row.get("EIGHT_RIDE_NUM")))
+                        .nineRide((int) Math.round((double) row.get("NINE_RIDE_NUM")))
+                        .tenRide((int) Math.round((double) row.get("TEN_RIDE_NUM")))
+                        .elevenRide((int) Math.round((double) row.get("ELEVEN_RIDE_NUM")))
+                        .twelveRide((int) Math.round((double) row.get("TWELVE_RIDE_NUM")))
+                        .thirteenRide((int) Math.round((double) row.get("THIRTEEN_RIDE_NUM")))
+                        .fourteenRide((int) Math.round((double) row.get("FOURTEEN_RIDE_NUM")))
+                        .fifteenRide((int) Math.round((double) row.get("FIFTEEN_RIDE_NUM")))
+                        .sixteenRide((int) Math.round((double) row.get("SIXTEEN_RIDE_NUM")))
+                        .seventeenRide((int) Math.round((double) row.get("SEVENTEEN_RIDE_NUM")))
+                        .eighteenRide((int) Math.round((double) row.get("EIGHTEEN_RIDE_NUM")))
+                        .nineteenRide((int) Math.round((double) row.get("NINETEEN_RIDE_NUM")))
+                        .twentyRide((int) Math.round((double) row.get("TWENTY_RIDE_NUM")))
+                        .twentyoneRide((int) Math.round((double) row.get("TWENTY_ONE_RIDE_NUM")))
+                        .twentytwoRide((int) Math.round((double) row.get("TWENTY_TWO_RIDE_NUM")))
+                        .twentythreeRide((int) Math.round((double) row.get("TWENTY_THREE_RIDE_NUM")))
+                        .midnightRide((int) Math.round((double) row.get("MIDNIGHT_RIDE_NUM")))
+                        .build();
+                jsonSameStationDtoList.add(timeStationPersonnelDto);
             }
-        }catch (Exception e) {
-
+            TimeStationPersonnelDto timeStationPersonnelDto = new TimeStationPersonnelDto();
+            List<TimeStationPersonnel> jsonSameStationList = timeStationPersonnelDto.toEntityList(jsonSameStationDtoList);
+            for(TimeStationPersonnel timeStationPersonnel : jsonSameStationList) {
+                timeStationPersonnelRepository.save(timeStationPersonnel);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
+
     // 실시간 열차 도착정보
     public void trainArrivalTnformation() throws IOException {
         StringBuilder urlBuilder = new StringBuilder("http://openapi.seoul.go.kr:8088");
