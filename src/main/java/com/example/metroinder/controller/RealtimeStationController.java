@@ -12,16 +12,15 @@ import java.io.IOException;
 public class RealtimeStationController {
     private final RealtimeStationservice RTSs;
     @GetMapping("/getRealtimeStation")
-    public String getRealtimeStation() throws IOException{
+//    public String getRealtimeStation(String Station) throws IOException
+    public String getRealtimeStation()throws IOException{
+//        RTSs.getStation(Station);
+        RTSs.getStation("서울");
         RTSs.RealtimeStaion();
 
         return "testrealtime";
     }
-    @GetMapping("/getStation")
-    public String getStaionname(){
-        RTSs.getStation("서울");
-        return "getRealtimeStaion";
-    }
+
     @GetMapping("/returnRealtimeStation")
     public String returnRealtimeStaion(){
         return"test";
