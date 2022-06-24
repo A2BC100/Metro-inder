@@ -21,7 +21,7 @@ public class RealtimeStationController {
         RTSs.getStation(Station);
         String realtimeJson = RTSs.realtimeStaion();
         JSONArray realtimedata = RTSs.returnRealtimeStatopm(realtimeJson);
-        System.out.print("");
+        
 
         return realtimedata;
     }
