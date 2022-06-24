@@ -208,7 +208,11 @@ function searchPlaces( val ){
         // 서버에서 혼잡도 정보 받아오기
         sendAJAX_GET('/returnPeopleCount?stationName=' + stationName,( data,status ) => {
             // 결과 출력
-            console.log( data );
+            resetGraphBar();
+            let data2 = JSON.parse( data );
+
+            let dataArr = [ data2.fiveRide,data2.sixRide,data2.sevenRide,data2.eightRide,data2.nineRide,data2.tenRide,data2.elevenRide,data2.twelveRide,data2.thirteenRide,data2.fourteenRide,data2.fifteenRide,data2.sixteenRide,data2.seventeenRide,data2.eighteenRide,data2.nineteenRide,data2.twentyRide,data2.twentyoneRide,data2.twentytwoRide,data2.twentythreeRide,data2.midnightRide ];
+            addGraphBar( dataArr );
         });
         // 도착시간 가져오기
         sendAJAX_GET('/getRealtimeStation?stationName=' + stationName,(data) => {
