@@ -11,6 +11,7 @@ import java.util.List;
 @Getter
 @NoArgsConstructor
 public class TimeStationPersonnelDto {
+    private Long id;
     private String station;
     private int oneRide;
     private int twoRide;
@@ -38,7 +39,8 @@ public class TimeStationPersonnelDto {
     private int midnightRide;
 
     @Builder
-    public TimeStationPersonnelDto(String station, int oneRide, int twoRide, int threeRide, int fourRide, int fiveRide, int sixRide, int sevenRide, int eightRide, int nineRide, int tenRide, int elevenRide, int twelveRide, int thirteenRide, int fourteenRide, int fifteenRide, int sixteenRide, int seventeenRide, int eighteenRide, int nineteenRide, int twentyRide, int twentyoneRide, int twentytwoRide, int twentythreeRide, int midnightRide) {
+    public TimeStationPersonnelDto(Long id, String station, int oneRide, int twoRide, int threeRide, int fourRide, int fiveRide, int sixRide, int sevenRide, int eightRide, int nineRide, int tenRide, int elevenRide, int twelveRide, int thirteenRide, int fourteenRide, int fifteenRide, int sixteenRide, int seventeenRide, int eighteenRide, int nineteenRide, int twentyRide, int twentyoneRide, int twentytwoRide, int twentythreeRide, int midnightRide) {
+        this.id = id;
         this.station = station;
         this.oneRide = oneRide;
         this.twoRide = twoRide;

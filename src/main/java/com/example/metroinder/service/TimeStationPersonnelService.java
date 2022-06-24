@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
@@ -24,12 +25,14 @@ import java.util.List;
 @Component
 @Service
 @RequiredArgsConstructor
+
 public class TimeStationPersonnelService {
     @Value("${generalKey}")
     public String generalKey;
     @Value("${realTimeKey}")
     public String realTimeKey;
 
+    @Autowired
     TimeStationPersonnelRepository timeStationPersonnelRepository;
 
     // 서울시 지하철 호선별 역별 시간대별 승하차 인원 정보 읽기
