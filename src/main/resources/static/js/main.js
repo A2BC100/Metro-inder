@@ -151,7 +151,7 @@ function searchPlaces( val ){
     let ps = new kakao.maps.services.Places();
 
     ps.keywordSearch( val, (data, status, pagination) => {
-        console.log(data);
+        // console.log(data);
         let bounds = new kakao.maps.LatLngBounds();
         bounds.extend(new kakao.maps.LatLng(data[0].y,data[0].x));
 
@@ -206,12 +206,12 @@ function searchPlaces( val ){
 
         let stationName = parseStationName( data[0].place_name );
         // 서버에서 혼잡도 정보 받아오기
-        sendAJAX_GET('/returnPeopleCount' + stationName,( data,status ) => {
+        sendAJAX_GET('/returnPeopleCount?stationName=' + stationName,( data,status ) => {
             // 결과 출력
             console.log( data );
         });
         // 도착시간 가져오기
-        sendAJAX_GET('/getRealtimeStation',(data) => {
+        sendAJAX_GET('/getRealtimeStation?stationName=' + stationName,(data) => {
             // 결과 출력
             console.log( data );
         });
