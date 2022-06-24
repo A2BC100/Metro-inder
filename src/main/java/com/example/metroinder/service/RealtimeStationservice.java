@@ -1,5 +1,8 @@
 package com.example.metroinder.service;
 
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
@@ -18,11 +21,13 @@ public class RealtimeStationservice {
     public String generalKey;
     @Value("${realTimeKey}")
     public String realTimeKey;
+    public StringBuilder sb;
     String station;
+    JSONParser jsonParser;
     public String getStation(String Stationname){
         return this.station=Stationname;
     }
-    public String RealtimeStaion() throws IOException {
+    public String realtimeStaion() throws IOException {
         StringBuilder urlBuilder = new StringBuilder("http://swopenAPI.seoul.go.kr");
         urlBuilder.append("/" + URLEncoder.encode("api","UTF-8"));
         urlBuilder.append("/" + URLEncoder.encode("subway","UTF-8"));
@@ -32,8 +37,6 @@ public class RealtimeStationservice {
         urlBuilder.append("/" + URLEncoder.encode("0", "UTF-8"));
         urlBuilder.append("/" + URLEncoder.encode("40", "UTF-8"));
         urlBuilder.append("/" + URLEncoder.encode(station, "UTF-8"));
-
-
 
         URL url = new URL(urlBuilder.toString());
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
@@ -47,7 +50,7 @@ public class RealtimeStationservice {
         } else {
             Br = new BufferedReader(new InputStreamReader(conn.getErrorStream()));
         }
-        StringBuilder sb = new StringBuilder();
+        sb = new StringBuilder();
         String line;
         while ((line = Br.readLine()) != null) {
             sb.append(line);
@@ -58,5 +61,15 @@ public class RealtimeStationservice {
 
         return sb.toString();
     }
-
+    public JSONArray returnRealtimeStatopm(String Json){
+        try{
+            jsonParser = new JSONParser();
+            JSONObject jsonObject = (JSONObject) jsonParser.parse(Json);
+            JSONArray Realtime = (JSONArray) jsonObject.get("realtimeArrivalList");
+            return Realtime;
+        }catch (Exception e){
+            e.printStackTrace();
+            return null;
+        }
+    }
 }
