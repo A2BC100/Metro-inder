@@ -37,7 +37,7 @@ function setMarkerVisible( visible ){
 
 function searchStationColorInfo( line ){
     let xhr = new XMLHttpRequest;
-    xhr.open('GET','./db/metro_colors.json',false);
+    xhr.open('GET','../json/metro_colors.json',false);
     xhr.send();
 
     let metroClrs = JSON.parse( xhr.responseText );
@@ -206,12 +206,12 @@ function searchPlaces( val ){
 
         let stationName = parseStationName( data[0].place_name );
         // 서버에서 혼잡도 정보 받아오기
-        sendAJAX_GET('/returnPeopleCount' + stationName,( data,status ) => {
+        sendAJAX_GET('/returnPeopleCount?stationName=' + stationName,( data,status ) => {
             // 결과 출력
             console.log( data );
         });
         // 도착시간 가져오기
-        sendAJAX_GET('/getRealtimeStation',(data) => {
+        sendAJAX_GET('/getRealtimeStation?stationName=' + stationName,(data) => {
             // 결과 출력
             console.log( data );
         });

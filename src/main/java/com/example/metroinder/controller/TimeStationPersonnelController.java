@@ -3,6 +3,7 @@ package com.example.metroinder.controller;
 
 import com.example.metroinder.service.TimeStationPersonnelService;
 import lombok.RequiredArgsConstructor;
+import org.json.simple.JSONArray;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
@@ -22,9 +23,9 @@ public class TimeStationPersonnelController {
     }
 
     @GetMapping("/returnPeopleCount")
-    @ResponseBody
-    public Map returnPeopleCount(@RequestParam("stationName") String stationName) {
-        Map json = timeStationPersonnelService.findSameStationPeople(stationName);
+    public JSONArray returnPeopleCount(@RequestParam("stationName") String stationName) {
+        JSONArray json = timeStationPersonnelService.findSameStationPeople(stationName);
+        System.out.println(json.get(0).toString());
         return json;
     }
 }
