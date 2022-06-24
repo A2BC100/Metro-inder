@@ -16,14 +16,10 @@ import java.util.List;
 public class RealtimeStationController {
     private final RealtimeStationservice RTSs;
     @GetMapping("/getRealtimeStation")
-//    public JSONArray getRealtimeStation(String Station) throws IOException
-    public JSONArray getRealtimeStation()throws IOException{
-//        RTSs.getStation(Station);
-        RTSs.getStation("서울");
+    public JSONArray getRealtimeStation(String Station) throws IOException {
+        RTSs.getStation(Station);
         String realtimeJson = RTSs.realtimeStaion();
         JSONArray realtimedata = RTSs.returnRealtimeStatopm(realtimeJson);
-        
-
         return realtimedata;
     }
 
