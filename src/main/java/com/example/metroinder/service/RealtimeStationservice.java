@@ -18,7 +18,10 @@ public class RealtimeStationservice {
     public String generalKey;
     @Value("${realTimeKey}")
     public String realTimeKey;
-
+    String station;
+    public String getStation(String Stationname){
+        return this.station=Stationname;
+    }
     public String RealtimeStaion() throws IOException {
         StringBuilder urlBuilder = new StringBuilder("http://swopenAPI.seoul.go.kr");
         urlBuilder.append("/" + URLEncoder.encode("api","UTF-8"));
@@ -27,8 +30,10 @@ public class RealtimeStationservice {
         urlBuilder.append("/" + URLEncoder.encode("json", "UTF-8"));
         urlBuilder.append("/" + URLEncoder.encode("realtimeStationArrival", "UTF-8"));
         urlBuilder.append("/" + URLEncoder.encode("0", "UTF-8"));
-        urlBuilder.append("/" + URLEncoder.encode("5", "UTF-8"));
-        urlBuilder.append("/" + URLEncoder.encode("서울", "UTF-8"));
+        urlBuilder.append("/" + URLEncoder.encode("40", "UTF-8"));
+        urlBuilder.append("/" + URLEncoder.encode(station, "UTF-8"));
+
+
 
         URL url = new URL(urlBuilder.toString());
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();

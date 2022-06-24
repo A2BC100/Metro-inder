@@ -17,5 +17,15 @@ public class RealtimeStationController {
 
         return "testrealtime";
     }
+    @GetMapping("/getStation")
+    public String getStaionname(){
+        RTSs.getStation("서울");
+        return "getRealtimeStaion";
+    }
+    @GetMapping("/returnRealtimeStation")
+    public String returnRealtimeStaion(){
+        return"test";
+    }
+
 
 }
