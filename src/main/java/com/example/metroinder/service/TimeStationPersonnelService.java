@@ -128,9 +128,8 @@ public class TimeStationPersonnelService {
         }
     }
 
-    public JSONArray findSameStationPeople(String data) {
-        JSONArray jsonList = new JSONArray();
-        JSONObject json = new JSONObject();
+    public Map findSameStationPeople(String data) {
+        Map json = new HashMap<String, Object>();
         List <TimeStationPersonnelRepository.SameStationPeople> sameStationPeoplelist = timeStationPersonnelRepository.findSameStationPeople();
         for(TimeStationPersonnelRepository.SameStationPeople sameStationPeople : sameStationPeoplelist) {
             String station = sameStationPeople.getStation();
@@ -160,9 +159,8 @@ public class TimeStationPersonnelService {
                 json.put("twentytwoRide", Long.valueOf(sameStationPeople.getTwentytwoRide()).intValue());
                 json.put("twentythreeRide", Long.valueOf(sameStationPeople.getTwentythreeRide()).intValue());
                 json.put("midnightRide", Long.valueOf(sameStationPeople.getMidnightRide()).intValue());
-                jsonList.add(json);
             }
         }
-        return jsonList;
+        return json;
     }
 }
