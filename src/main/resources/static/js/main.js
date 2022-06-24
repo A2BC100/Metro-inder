@@ -204,9 +204,10 @@ function searchPlaces( val ){
         // 혼잡도 그래프 초기화
         resetGraphBar();
 
+        let stationName = parseStationName( data[0].place_name );
         // 서버에서 혼잡도 정보 받아오기
         let xhr = new XMLHttpRequest;
-        xhr.open('GET','/returnPeopleCount');
+        xhr.open('GET','/returnPeopleCount?stationName=' + stationName);
         xhr.onreadystatechange = (event) => {
             let { target } = event;
 
