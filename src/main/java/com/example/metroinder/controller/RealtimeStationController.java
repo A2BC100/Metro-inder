@@ -13,7 +13,7 @@ import java.io.IOException;
 public class RealtimeStationController {
     private final RealtimeStationservice RTSs;
     @GetMapping("/getRealtimeStation")
-//    public String getRealtimeStation(String Station) throws IOException
+//    public JSONArray getRealtimeStation(String Station) throws IOException
     public JSONArray getRealtimeStation()throws IOException{
 //        RTSs.getStation(Station);
         RTSs.getStation("서울");
