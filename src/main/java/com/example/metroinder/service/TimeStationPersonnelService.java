@@ -37,7 +37,7 @@ public class TimeStationPersonnelService {
 
     // 서울시 지하철 호선별 역별 시간대별 승하차 인원 정보 읽기
     public String peopleInformationBySeoulAtTimeRead() throws IOException {
-        StringBuilder urlBuilder = new StringBuilder("http://openapi.seoul.go.kr:8088/api/subway");
+        StringBuilder urlBuilder = new StringBuilder("http://openapi.seoul.go.kr:8088");
         urlBuilder.append("/" + URLEncoder.encode(generalKey, "UTF-8"));
         urlBuilder.append("/" + URLEncoder.encode("json", "UTF-8"));
         urlBuilder.append("/" + URLEncoder.encode("CardSubwayTime", "UTF-8"));
