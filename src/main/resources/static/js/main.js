@@ -206,17 +206,28 @@ function searchPlaces( val ){
 
         let stationName = parseStationName( data[0].place_name );
         // 서버에서 혼잡도 정보 받아오기
-        let xhr = new XMLHttpRequest;
-        xhr.open('GET','/returnPeopleCount?stationName=' + stationName);
-        xhr.onreadystatechange = (event) => {
-            let { target } = event;
-
-            if( target.readyState === XMLHttpRequest.DONE ){
-                let { status } = target;
-                // 서버 상태 받아오기
-                console.log( status );
-            }
-        }
-        xhr.send();
+        sendAJAX_GET('/returnPeopleCount' + stationName,( data,status ) => {
+            // 결과 출력
+            console.log( data );
+        });
+        // 도착시간 가져오기
+        sendAJAX_GET('/getRealtimeStation',(data) => {
+            // 결과 출력
+            console.log( data );
+        });
     });
+}
+
+function sendAJAX_GET( url,callback ){
+    let xhr = new XMLHttpRequest;
+    xhr.open('GET',url);
+    xhr.onreadystatechange = (event) => {
+        let { target } = event;
+
+        if( target.readyState === XMLHttpRequest.DONE ){
+            let { status } = target;
+            callback( xhr.responseText, status );
+        }
+    }
+    xhr.send();
 }
