@@ -25,6 +25,9 @@ header > h2 {
 .unselectable {
     user-select: none;
 }
+.unselectable:hover {
+    cursor: pointer;
+}
 .icon_wrapper {
     border-top-left-radius: 5px;
     border-bottom-left-radius: 5px;
@@ -45,12 +48,23 @@ header > h2 {
     background-size: 100% 100% !important;
     border: none;
 }
+.header_btn_shared:hover {
+    cursor: pointer;
+}
 .marker_on_btn {
     background: url('../icons/marker.svg');
+}
+.marker_on_btn:hover {
+    cursor: pointer;
 }
 .marker_off_btn {
     background: url('../icons/marker_hide.svg');
 }
+
+.marker_off_btn:hover {
+    cursor: pointer;
+}
+
 .mapview {
     position: absolute;
     width: 100%;
@@ -158,10 +172,30 @@ header > h2 {
     height: 64px;
     text-align: center;
 }
+.timetablebox_content {
+    position: relative;
+    width: 100%;
+    height: calc(100% - 64px);
+    display: flex;
+}
+.timetablebox_content :first-child {
+    border-right: 1px solid rgb(227,227,227);
+}
+.timetablebox_content > div {
+    position: relative;
+    width: 50%;
+    height: 100%;
+    text-align: center;
+}
+.timetablebox_subheader {
+    font-family: "nanum_gothic_yethangul";
+    display: grid;
+    border: none !important;
+}
 .timetablebox_title {
     position: relative;
     display: inline-block;
-    font-family: "nanum_gothic_yethangul";
+    font-family: "subway_font";
     font-size: 16pt;
     width: 320px;
     height: 32px;

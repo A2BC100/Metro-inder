@@ -5,8 +5,6 @@ import com.example.metroinder.service.TimeStationPersonnelService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
-
-import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.util.Map;
 
@@ -15,7 +13,8 @@ import java.util.Map;
 public class TimeStationPersonnelController {
     private final TimeStationPersonnelService timeStationPersonnelService;
 
-    @GetMapping("/seoulSubwayTimeZoneInformationSave")
+    @PostMapping("/seoulSubwayTimeZoneInformationSave")
+    @ResponseBody
     public void seoulSubwayTimeZoneInformationSave() throws IOException {
         String json = timeStationPersonnelService.peopleInformationBySeoulAtTimeRead();
         timeStationPersonnelService.peopleInformationBySeoulAtTimeSave(json);

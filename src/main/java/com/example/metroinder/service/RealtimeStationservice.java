@@ -1,5 +1,6 @@
 package com.example.metroinder.service;
 
+import com.revinate.guava.util.concurrent.RateLimiter;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -23,11 +24,15 @@ public class RealtimeStationservice {
     public String realTimeKey;
     public StringBuilder sb;
     String station;
-    JSONParser jsonParser;
+
+    private RateLimiter throttle = RateLimiter.create(0.05);
+
     public String getStation(String Stationname){
         return this.station=Stationname;
     }
+
     public String realtimeStaion() throws IOException {
+//        throttle.acquire();
         StringBuilder urlBuilder = new StringBuilder("http://swopenAPI.seoul.go.kr");
         urlBuilder.append("/" + URLEncoder.encode("api","UTF-8"));
         urlBuilder.append("/" + URLEncoder.encode("subway","UTF-8"));
@@ -57,7 +62,6 @@ public class RealtimeStationservice {
         }
         Br.close();
         conn.disconnect();
-        System.out.println(sb.toString());
 
         return sb.toString();
     }
