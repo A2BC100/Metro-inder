@@ -16,7 +16,7 @@ import java.util.Map;
 public class TimeStationPersonnelController {
     private final TimeStationPersonnelService timeStationPersonnelService;
 
-    @PostMapping("/seoulSubwayTimeZoneInformationSave")
+    @GetMapping("/seoulSubwayTimeZoneInformationSave")
     public void seoulSubwayTimeZoneInformationSave() throws IOException {
         String json = timeStationPersonnelService.peopleInformationBySeoulAtTimeRead();
         timeStationPersonnelService.peopleInformationBySeoulAtTimeSave(json);

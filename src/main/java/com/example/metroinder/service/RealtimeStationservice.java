@@ -61,15 +61,5 @@ public class RealtimeStationservice {
 
         return sb.toString();
     }
-    public JSONArray returnRealtimeStatopm(String Json){
-        try{
-            jsonParser = new JSONParser();
-            JSONObject jsonObject = (JSONObject) jsonParser.parse(Json);
-            JSONArray Realtime = (JSONArray) jsonObject.get("realtimeArrivalList");
-            return Realtime;
-        }catch (Exception e){
-            e.printStackTrace();
-            return null;
-        }
-    }
+
 }
