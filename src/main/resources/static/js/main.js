@@ -37,7 +37,7 @@ function setMarkerVisible( visible ){
 
 function searchStationColorInfo( line ){
     let xhr = new XMLHttpRequest;
-    xhr.open('GET','../json/metro_colors.json',false);
+    xhr.open('GET','./db/metro_colors.json',false);
     xhr.send();
 
     let metroClrs = JSON.parse( xhr.responseText );
@@ -45,7 +45,7 @@ function searchStationColorInfo( line ){
     if( !line ){
         return '';
     }
-    
+
     if( line.indexOf("수도권") > -1 && line.indexOf("호선") > -1 ){
         let lineNum = line.match(/\d/g);
         if( lineNum.length > 0 ){
@@ -80,7 +80,7 @@ function searchStationColorInfo( line ){
     if( line === '김포골드라인' ){
         return metroClrs['GG'][0]['G'];
     }
-    
+
     return '';
 }
 
@@ -102,7 +102,7 @@ function appendTimeTableBox( name,color ){
 
     let title = document.createElement('div');
     title.setAttribute('class','timetablebox_title');
-    title.className = 'timetablebox_title';
+    title.className = 'timetablebox_title unselectable';
     title.style.borderColor = color;
     title.textContent = name;
 
@@ -151,7 +151,7 @@ function searchPlaces( val ){
     let ps = new kakao.maps.services.Places();
 
     ps.keywordSearch( val, (data, status, pagination) => {
-        // console.log(data);
+        console.log(data);
         let bounds = new kakao.maps.LatLngBounds();
         bounds.extend(new kakao.maps.LatLng(data[0].y,data[0].x));
 
@@ -206,12 +206,12 @@ function searchPlaces( val ){
 
         let stationName = parseStationName( data[0].place_name );
         // 서버에서 혼잡도 정보 받아오기
-        sendAJAX_GET('/returnPeopleCount?stationName=' + stationName,( data,status ) => {
+        sendAJAX_GET('/returnPeopleCount' + stationName,( data,status ) => {
             // 결과 출력
             console.log( data );
         });
         // 도착시간 가져오기
-        sendAJAX_GET('/getRealtimeStation?stationName=' + stationName,(data) => {
+        sendAJAX_GET('/getRealtimeStation',(data) => {
             // 결과 출력
             console.log( data );
         });
