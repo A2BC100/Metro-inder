@@ -5,6 +5,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 
 @Entity
@@ -14,6 +16,8 @@ import javax.persistence.Id;
 @Builder
 public class TimeStationPersonnel extends Timestamped {
     @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private Long id;
     private String station;
     private int oneRide;
     private int twoRide;
@@ -41,7 +45,8 @@ public class TimeStationPersonnel extends Timestamped {
     private int midnightRide;
 
     @Builder
-    public TimeStationPersonnel(String station, int oneRide, int twoRide, int threeRide, int fourRide, int fiveRide, int sixRide, int sevenRide, int eightRide, int nineRide, int tenRide, int elevenRide, int twelveRide, int thirteenRide, int fourteenRide, int fifteenRide, int sixteenRide, int seventeenRide, int eighteenRide, int nineteenRide, int twentyRide, int twentyoneRide, int twentytwoRide, int twentythreeRide, int midnightRide) {
+    public TimeStationPersonnel(Long id, String station, int oneRide, int twoRide, int threeRide, int fourRide, int fiveRide, int sixRide, int sevenRide, int eightRide, int nineRide, int tenRide, int elevenRide, int twelveRide, int thirteenRide, int fourteenRide, int fifteenRide, int sixteenRide, int seventeenRide, int eighteenRide, int nineteenRide, int twentyRide, int twentyoneRide, int twentytwoRide, int twentythreeRide, int midnightRide) {
+        this.id = id;
         this.station = station;
         this.oneRide = oneRide;
         this.twoRide = twoRide;
