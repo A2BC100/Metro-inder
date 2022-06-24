@@ -37,7 +37,7 @@ public class TimeStationPersonnelService {
 
     // 서울시 지하철 호선별 역별 시간대별 승하차 인원 정보 읽기
     public String peopleInformationBySeoulAtTimeRead() throws IOException {
-        StringBuilder urlBuilder = new StringBuilder("http://openapi.seoul.go.kr:8088");
+        StringBuilder urlBuilder = new StringBuilder("http://openapi.seoul.go.kr:8088/api/subway");
         urlBuilder.append("/" + URLEncoder.encode(generalKey, "UTF-8"));
         urlBuilder.append("/" + URLEncoder.encode("json", "UTF-8"));
         urlBuilder.append("/" + URLEncoder.encode("CardSubwayTime", "UTF-8"));
@@ -127,34 +127,5 @@ public class TimeStationPersonnelService {
     }
 
     // 실시간 열차 도착정보
-    public void trainArrivalTnformation() throws IOException {
-        StringBuilder urlBuilder = new StringBuilder("http://openapi.seoul.go.kr:8088");
-        urlBuilder.append("/" + URLEncoder.encode(realTimeKey, "UTF-8"));
-        urlBuilder.append("/" + URLEncoder.encode("json", "UTF-8"));
-        urlBuilder.append("/" + URLEncoder.encode("realtimeStationArrival/ALL", "UTF-8"));
-        urlBuilder.append("/" + URLEncoder.encode("1", "UTF-8"));
-        urlBuilder.append("/" + URLEncoder.encode("5", "UTF-8"));
 
-
-        URL url = new URL(urlBuilder.toString());
-        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-        conn.setRequestMethod("GET");
-        conn.setRequestProperty("Content-type", "application/json");
-        System.out.println("Response code: " + conn.getResponseCode());
-        BufferedReader rd;
-
-        if (conn.getResponseCode() >= 200 && conn.getResponseCode() <= 300) {
-            rd = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-        } else {
-            rd = new BufferedReader(new InputStreamReader(conn.getErrorStream()));
-        }
-        StringBuilder sb = new StringBuilder();
-        String line;
-        while ((line = rd.readLine()) != null) {
-            sb.append(line);
-        }
-        rd.close();
-        conn.disconnect();
-        System.out.println(sb.toString());
-    }
 }
