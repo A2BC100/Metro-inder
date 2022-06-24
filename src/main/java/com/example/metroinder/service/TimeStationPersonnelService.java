@@ -42,7 +42,7 @@ public class TimeStationPersonnelService {
         urlBuilder.append("/" + URLEncoder.encode("json", "UTF-8"));
         urlBuilder.append("/" + URLEncoder.encode("CardSubwayTime", "UTF-8"));
         urlBuilder.append("/" + URLEncoder.encode("1", "UTF-8"));
-        urlBuilder.append("/" + URLEncoder.encode("5", "UTF-8"));
+        urlBuilder.append("/" + URLEncoder.encode("1000", "UTF-8"));
 
         /* 서비스별 추가 요청인자*/
         urlBuilder.append("/" + URLEncoder.encode("202205", "UTF-8"));//월별, 최신 2022년 5월까지
