@@ -31,8 +31,6 @@ import java.util.Map;
 public class TimeStationPersonnelService {
     @Value("${generalKey}")
     public String generalKey;
-    @Value("${realTimeKey}")
-    public String realTimeKey;
 
     @Autowired
     TimeStationPersonnelRepository timeStationPersonnelRepository;
@@ -53,7 +51,7 @@ public class TimeStationPersonnelService {
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         conn.setRequestMethod("GET");
         conn.setRequestProperty("Content-type", "application/json");
-        System.out.println("Response code: " + conn.getResponseCode()); /* 연결에 대한 확인*/
+        System.out.println("역별 시간별 사람 수 API호출 - Response code: " + conn.getResponseCode()); /* 연결에 대한 확인*/
         BufferedReader rd;
 
         // 서비스코드가 정상이면 200~300사이의 숫자
@@ -78,8 +76,6 @@ public class TimeStationPersonnelService {
             JSONParser jsonParser = new JSONParser();
             JSONObject jsonObject = (JSONObject) jsonParser.parse(json);
             JSONObject cardSubwayTime = (JSONObject) jsonObject.get("CardSubwayTime");
-
-            int listTotalCount = Long.valueOf((Long) cardSubwayTime.get("list_total_count")).intValue();
 
             JSONArray jsonArr = (JSONArray) cardSubwayTime.get("row");
             List<TimeStationPersonnelDto> jsonSameStationDtoList = new ArrayList<>();
