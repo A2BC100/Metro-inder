@@ -17,7 +17,7 @@ public class RealtimeStationController {
     private final RealtimeStationservice RTSs;
     @GetMapping("/getRealtimeStation")
     @ResponseBody
-    public String getRealtimeStation(@RequestParam("stationName")String Station) throws IOException {
+    public String getRealtimeStation(@RequestParam("stationName")String Station) throws Exception {
         RTSs.getStation(Station);
         String realtimeJson = RTSs.realtimeStaion();
         return realtimeJson;

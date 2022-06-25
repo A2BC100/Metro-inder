@@ -44,7 +44,7 @@ public class RealtimeStationservice {
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         conn.setRequestMethod("GET");
         conn.setRequestProperty("Content-type","application/json");
-        System.out.println("Response cod:"+conn.getResponseCode());
+        System.out.println("실시간 지하철 도착 정보 API호출 - Response cod:"+conn.getResponseCode());
         BufferedReader Br;
 
         if (conn.getResponseCode() >= 200 && conn.getResponseCode() <= 300) {
