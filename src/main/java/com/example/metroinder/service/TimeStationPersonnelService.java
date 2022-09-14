@@ -5,6 +5,7 @@ import com.example.metroinder.dto.TimeStationPersonnelDto;
 import com.example.metroinder.model.TimeStationPersonnel;
 import com.example.metroinder.repository.TimeStationPersonnelRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -27,7 +28,7 @@ import java.util.Map;
 @Component
 @Service
 @RequiredArgsConstructor
-
+@Slf4j
 public class TimeStationPersonnelService {
     @Value("${generalKey}")
     public String generalKey;
@@ -36,7 +37,7 @@ public class TimeStationPersonnelService {
     TimeStationPersonnelRepository timeStationPersonnelRepository;
 
     // 서울시 지하철 호선별 역별 시간대별 승하차 인원 정보 읽기
-    public String peopleInformationBySeoulAtTimeRead() throws IOException {
+    public String peopleInformationBySeoulAtTimeRead(String dataScope) throws IOException {
         StringBuilder urlBuilder = new StringBuilder("http://openapi.seoul.go.kr:8088");
         urlBuilder.append("/" + URLEncoder.encode(generalKey, "UTF-8"));
         urlBuilder.append("/" + URLEncoder.encode("json", "UTF-8"));
@@ -45,13 +46,13 @@ public class TimeStationPersonnelService {
         urlBuilder.append("/" + URLEncoder.encode("999", "UTF-8"));
 
         /* 서비스별 추가 요청인자*/
-        urlBuilder.append("/" + URLEncoder.encode("202205", "UTF-8"));//월별, 최신 2022년 5월까지
+        urlBuilder.append("/" + URLEncoder.encode(dataScope, "UTF-8"));//월별, 최신 2022년 5월까지
 
         URL url = new URL(urlBuilder.toString());
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         conn.setRequestMethod("GET");
         conn.setRequestProperty("Content-type", "application/json");
-        System.out.println("역별 시간별 사람 수 API호출 - Response code: " + conn.getResponseCode()); /* 연결에 대한 확인*/
+        System.out.println("Response code: " + conn.getResponseCode()); /* 연결에 대한 확인*/
         BufferedReader rd;
 
         // 서비스코드가 정상이면 200~300사이의 숫자
@@ -123,10 +124,10 @@ public class TimeStationPersonnelService {
             e.printStackTrace();
         }
     }
-
-    public Map findSameStationPeople(String data) {
+    // 혼잡도 리턴을 위한 메소드
+    public Map findSameStationPeople(String data, int months) {
         Map json = new HashMap<String, Object>();
-        List <TimeStationPersonnelRepository.SameStationPeople> sameStationPeoplelist = timeStationPersonnelRepository.findSameStationPeople();
+        List <TimeStationPersonnelRepository.SameStationPeople> sameStationPeoplelist = timeStationPersonnelRepository.findSameStationPeople(months);
         for(TimeStationPersonnelRepository.SameStationPeople sameStationPeople : sameStationPeoplelist) {
             String station = sameStationPeople.getStation();
             if(station.equals(data)) {
@@ -158,5 +159,10 @@ public class TimeStationPersonnelService {
             }
         }
         return json;
+    }
+    //혼잡도데이터가 담겨있는 Entity에서 겹치지 않는(distinct) 역이름을 list에 담아오기 위한 메소드
+    public List<String> stationDistinctList() {
+        List<String> stationList = timeStationPersonnelRepository.findDistinctStation();
+        return stationList;
     }
 }

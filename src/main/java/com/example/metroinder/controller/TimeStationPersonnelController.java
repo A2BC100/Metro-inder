@@ -13,18 +13,20 @@ import java.util.Map;
 public class TimeStationPersonnelController {
     private final TimeStationPersonnelService timeStationPersonnelService;
 
-    @PostMapping("/seoulSubwayTimeZoneInformationSave")
+    @GetMapping("/seoulSubwayTimeZoneInformationSave")
     @ResponseBody
     public void seoulSubwayTimeZoneInformationSave() throws IOException {
-        String json = timeStationPersonnelService.peopleInformationBySeoulAtTimeRead();
-        timeStationPersonnelService.peopleInformationBySeoulAtTimeSave(json);
+        for(int i = 5; i <= 7; i++ ) {
+            String json = timeStationPersonnelService.peopleInformationBySeoulAtTimeRead("20220"+i);
+            timeStationPersonnelService.peopleInformationBySeoulAtTimeSave(json);
+        }
     }
 
 
     @GetMapping("/returnPeopleCount")
     @ResponseBody
     public Map returnPeopleCount(@RequestParam("stationName") String stationName) {
-        Map json = timeStationPersonnelService.findSameStationPeople(stationName);
+        Map json = timeStationPersonnelService.findSameStationPeople(stationName, 3);
         return json;
     }
 }
