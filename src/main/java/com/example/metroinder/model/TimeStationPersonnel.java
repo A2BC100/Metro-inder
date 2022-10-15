@@ -19,6 +19,8 @@ public class TimeStationPersonnel extends Timestamped {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
     private String station;
+    private Double lat;
+    private Double lng;
     private int oneRide;
     private int twoRide;
     private int threeRide;
@@ -45,9 +47,11 @@ public class TimeStationPersonnel extends Timestamped {
     private int midnightRide;
 
     @Builder
-    public TimeStationPersonnel(Long id, String station, int oneRide, int twoRide, int threeRide, int fourRide, int fiveRide, int sixRide, int sevenRide, int eightRide, int nineRide, int tenRide, int elevenRide, int twelveRide, int thirteenRide, int fourteenRide, int fifteenRide, int sixteenRide, int seventeenRide, int eighteenRide, int nineteenRide, int twentyRide, int twentyoneRide, int twentytwoRide, int twentythreeRide, int midnightRide) {
+    public TimeStationPersonnel(Long id, String station,Double lat, Double lng, int oneRide, int twoRide, int threeRide, int fourRide, int fiveRide, int sixRide, int sevenRide, int eightRide, int nineRide, int tenRide, int elevenRide, int twelveRide, int thirteenRide, int fourteenRide, int fifteenRide, int sixteenRide, int seventeenRide, int eighteenRide, int nineteenRide, int twentyRide, int twentyoneRide, int twentytwoRide, int twentythreeRide, int midnightRide) {
         this.id = id;
         this.station = station;
+        this.lat = lat;
+        this.lng = lng;
         this.oneRide = oneRide;
         this.twoRide = twoRide;
         this.threeRide = threeRide;

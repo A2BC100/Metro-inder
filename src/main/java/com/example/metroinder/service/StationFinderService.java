@@ -1,6 +1,6 @@
 package com.example.metroinder.service;
 
-import com.example.metroinder.astar.Station;
+import com.example.metroinder.model.Station;
 
 import java.util.List;
 
@@ -18,7 +18,7 @@ public class StationFinderService {
 
         return Math.round( 6378.137 * Math.acos( Math.cos( lat_start ) * Math.cos( lat_end ) * Math.cos( lon_end - lon_start ) + Math.sin( lat_start ) * Math.sin( lat_end )) * 1000.0 );
     }
-    // 이것들 만으로는 지하철 노선도에 따른 환승 정보를 알 수가 없음, 거리 비용이 적은 경로를 탐색하는건 알겠지만 traffic이 사용되지 않음, 미터 단위이기 때문에 double을 사용해서 한 건 알겠음, traffic은 왜 int로 했는지 궁금함, 그냥 traffic도 double로 해서
+    // 거리 비용이 적은 경로를 탐색하는건 알겠지만 traffic이 사용되지 않음, 미터 단위이기 때문에 double을 사용해서 한 건 알겠음, traffic은 왜 int로 했는지 궁금함, 그냥 traffic도 double로 해서
     // 거리 비용에 더해서 최종 비용 산정할 때 같이 계산하면 되지 않는지, 내가 잘 이해하고 있는지 모르겠음
 
     // 역이 업데이트나 추가때문이라면 AllList(모든 역?)에서 처음에는 null일텐데 AllList를 반복시킨다면 에러가 뜰텐데 처음에 allList값을 세팅해줄 때 DB에서 세팅해주고 그 후 업데이트도 DB에서 한다면 굳이 필요한 코드는 아니지 않은지

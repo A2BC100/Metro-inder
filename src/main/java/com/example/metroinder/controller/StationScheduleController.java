@@ -29,7 +29,7 @@ public class StationScheduleController {
 
         for(int i = 0; i < stationList.size(); i++) {
             //log.info("역이름 테스트("+ i + ") : " +stationList.get(i));
-            String json = stationScheduleService.getStationCode(stationScheduleService.deleteBracket(stationList.get(i)));
+            String json = stationScheduleService.getStationCode(stationList.get(i));
             stationScheduleService.stationScheduleCall(json, "1", "1");
             //stationScheduleService.setStationScheduleSave(json, "1", "2");
             //stationScheduleService.setStationScheduleSave(json, "2", "1");

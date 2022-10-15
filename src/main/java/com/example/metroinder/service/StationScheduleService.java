@@ -37,9 +37,6 @@ public class StationScheduleService {
     @Autowired
     StationScheduleRepository stationScheduleRepository;
 
-    Pattern PATTERN_BRACKET = Pattern.compile("\\([^\\(\\)]+\\)");
-    String VOID = "";
-
     /* 입력한 역이름으로 역코드목록을 json으로 받아옴 */
     public String getStationCode(String station) throws IOException {
         StringBuilder urlBuilder = new StringBuilder("http://openAPI.seoul.go.kr:8088");
@@ -193,20 +190,7 @@ public class StationScheduleService {
         }
     }
 
-    // 괄호 제거
-    public String deleteBracket(String text) {
-        Matcher matcher = PATTERN_BRACKET.matcher(text);
-        String pureText = text;
-        String removeTextArea = new String();
-        while(matcher.find()) {
-            int startIndex = matcher.start();
-            int endIndex = matcher.end();
-            removeTextArea = pureText.substring(startIndex, endIndex);
-            pureText = pureText.replace(removeTextArea, VOID);
-            matcher = PATTERN_BRACKET.matcher(pureText);
-        }
-        return pureText;
-    }
+
 
 
 }

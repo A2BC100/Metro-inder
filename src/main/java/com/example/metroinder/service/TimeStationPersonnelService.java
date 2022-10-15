@@ -2,6 +2,7 @@ package com.example.metroinder.service;
 
 
 import com.example.metroinder.dto.TimeStationPersonnelDto;
+import com.example.metroinder.model.Station;
 import com.example.metroinder.model.TimeStationPersonnel;
 import com.example.metroinder.repository.TimeStationPersonnelRepository;
 import lombok.RequiredArgsConstructor;
@@ -9,14 +10,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
@@ -24,6 +24,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Component
 @Service
@@ -32,6 +34,9 @@ import java.util.Map;
 public class TimeStationPersonnelService {
     @Value("${generalKey}")
     public String generalKey;
+
+    Pattern PATTERN_BRACKET = Pattern.compile("\\([^\\(\\)]+\\)");
+    String VOID = "";
 
     @Autowired
     TimeStationPersonnelRepository timeStationPersonnelRepository;
@@ -82,7 +87,7 @@ public class TimeStationPersonnelService {
             List<TimeStationPersonnelDto> jsonSameStationDtoList = new ArrayList<>();
             for (int count = 0; count < jsonArr.size(); count++) {
                 JSONObject row = (JSONObject) jsonArr.get(count);
-                String station = (String) row.get("SUB_STA_NM");
+                String station = deleteBracket((String) row.get("SUB_STA_NM"));
                 if(station.equals("서울역")) {
                     station = "서울";
                 }
@@ -124,6 +129,7 @@ public class TimeStationPersonnelService {
             e.printStackTrace();
         }
     }
+
     // 혼잡도 리턴을 위한 메소드
     public Map findSameStationPeople(String data, int months) {
         Map json = new HashMap<String, Object>();
@@ -164,5 +170,89 @@ public class TimeStationPersonnelService {
     public List<String> stationDistinctList() {
         List<String> stationList = timeStationPersonnelRepository.findDistinctStation();
         return stationList;
+    }
+
+    //혼잡도 평균 List 생성
+    public void getStationDegreeOfCongestionAvg() {
+        List<TimeStationPersonnel> timeStationPersonnelList = new ArrayList<>();
+        List <TimeStationPersonnelRepository.SameStationPeople> sameStationPeoplelist = timeStationPersonnelRepository.stationDegreeOfCongestion(4);
+        for(TimeStationPersonnelRepository.SameStationPeople sameStationPeople : sameStationPeoplelist) {
+            //log.info("역이름 : " + sameStationPeople.getStation());
+            TimeStationPersonnel timeStationPersonnel = new TimeStationPersonnel();
+            timeStationPersonnel.setStation(sameStationPeople.getStation());
+            timeStationPersonnel.setOneRide(Long.valueOf(sameStationPeople.getOneRide()).intValue());
+            timeStationPersonnel.setTwoRide(Long.valueOf(sameStationPeople.getTwoRide()).intValue());
+            timeStationPersonnel.setThreeRide(Long.valueOf(sameStationPeople.getThreeRide()).intValue());
+            timeStationPersonnel.setFourRide(Long.valueOf(sameStationPeople.getFourRide()).intValue());
+            timeStationPersonnel.setFiveRide(Long.valueOf(sameStationPeople.getFiveRide()).intValue());
+            timeStationPersonnel.setSixRide(Long.valueOf(sameStationPeople.getSixRide()).intValue());
+            timeStationPersonnel.setSevenRide(Long.valueOf(sameStationPeople.getSevenRide()).intValue());
+            timeStationPersonnel.setEightRide(Long.valueOf(sameStationPeople.getEightRide()).intValue());
+            timeStationPersonnel.setNineRide(Long.valueOf(sameStationPeople.getNineRide()).intValue());
+            timeStationPersonnel.setTenRide(Long.valueOf(sameStationPeople.getTenRide()).intValue());
+            timeStationPersonnel.setElevenRide(Long.valueOf(sameStationPeople.getElevenRide()).intValue());
+            timeStationPersonnel.setTwelveRide(Long.valueOf(sameStationPeople.getTwelveRide()).intValue());
+            timeStationPersonnel.setThirteenRide(Long.valueOf(sameStationPeople.getThirteenRide()).intValue());
+            timeStationPersonnel.setFourteenRide(Long.valueOf(sameStationPeople.getFourteenRide()).intValue());
+            timeStationPersonnel.setFifteenRide(Long.valueOf(sameStationPeople.getFifteenRide()).intValue());
+            timeStationPersonnel.setSixteenRide(Long.valueOf(sameStationPeople.getSixteenRide()).intValue());
+            timeStationPersonnel.setSeventeenRide(Long.valueOf(sameStationPeople.getSeventeenRide()).intValue());
+            timeStationPersonnel.setEighteenRide(Long.valueOf(sameStationPeople.getEighteenRide()).intValue());
+            timeStationPersonnel.setNineteenRide(Long.valueOf(sameStationPeople.getNineteenRide()).intValue());
+            timeStationPersonnel.setTwentyRide(Long.valueOf(sameStationPeople.getTwentyRide()).intValue());
+            timeStationPersonnel.setTwentyoneRide(Long.valueOf(sameStationPeople.getTwentyoneRide()).intValue());
+            timeStationPersonnel.setTwentytwoRide(Long.valueOf(sameStationPeople.getTwentytwoRide()).intValue());
+            timeStationPersonnel.setTwentythreeRide(Long.valueOf(sameStationPeople.getTwentythreeRide()).intValue());
+            timeStationPersonnel.setMidnightRide(Long.valueOf(sameStationPeople.getMidnightRide()).intValue());
+            timeStationPersonnelList.add(timeStationPersonnel);
+        }
+        timeStationPersonnelRepository.resetTimeStationPersonnel();
+        for(TimeStationPersonnel timeStationPersonnel : timeStationPersonnelList) {
+            timeStationPersonnelRepository.save(timeStationPersonnel);
+        }
+    }
+
+    // 위도, 경도 json 파일 parshing
+    public void setLetLon() throws IOException, ParseException, NullPointerException {
+        try {
+            JSONParser jsonParser = new JSONParser();
+            Reader reader = new FileReader("src/main/resources/static/json/station_coordinate.json");
+            JSONArray jsonArray = (JSONArray) jsonParser.parse(reader);
+            //log.info(""+ jsonArray);
+            for (int count = 0; count < jsonArray.size(); count++) {
+                JSONObject row = (JSONObject) jsonArray.get(count);
+                String station = (String) row.get("name");
+                Double lat = (Double) row.get("lat");
+                Double lng = (Double) row.get("lng");
+                // log.info(""+ station + " : " + "위도 : " + lat + ", 경도 : " + lng);
+                TimeStationPersonnel timeStationPersonnel = timeStationPersonnelRepository.findByStation(station);
+                if(timeStationPersonnel == null) {
+                    continue;
+                }
+                if(timeStationPersonnel.getLat() != null && timeStationPersonnel.getLng() != null) {
+                    continue;
+                }
+                timeStationPersonnel.setLat(lat);
+                timeStationPersonnel.setLng(lng);
+                timeStationPersonnelRepository.save(timeStationPersonnel);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    // 괄호 제거
+    public String deleteBracket(String text) {
+        Matcher matcher = PATTERN_BRACKET.matcher(text);
+        String pureText = text;
+        String removeTextArea = new String();
+        while(matcher.find()) {
+            int startIndex = matcher.start();
+            int endIndex = matcher.end();
+            removeTextArea = pureText.substring(startIndex, endIndex);
+            pureText = pureText.replace(removeTextArea, VOID);
+            matcher = PATTERN_BRACKET.matcher(pureText);
+        }
+        return pureText;
     }
 }

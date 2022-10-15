@@ -1,4 +1,4 @@
-package com.example.metroinder.astar;
+package com.example.metroinder.model;
 
 public class Station {
     public String name;
