@@ -9,7 +9,6 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import java.util.Date;
 
 @Entity
 @NoArgsConstructor
@@ -20,6 +19,7 @@ public class StationSchedule extends Timestamped {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long stationId;
+    private String line;
     private String station;
     private String arrivalTime;
     private String departureTime;
@@ -30,8 +30,9 @@ public class StationSchedule extends Timestamped {
     private String express;
 
     @Builder
-    public StationSchedule(Long stationId, String station, String arrivalTime, String departureTime, String arrivalStation, String departureStation, String week, String upDown, String express) {
+    public StationSchedule(Long stationId, String line, String station, String arrivalTime, String departureTime, String arrivalStation, String departureStation, String week, String upDown, String express) {
         this.stationId = stationId;
+        this.line = line;
         this.station = station;
         this.arrivalTime = arrivalTime;
         this.departureTime = departureTime;

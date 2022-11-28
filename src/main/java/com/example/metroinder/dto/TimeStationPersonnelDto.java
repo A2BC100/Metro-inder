@@ -11,8 +11,9 @@ import java.util.List;
 @Getter
 @NoArgsConstructor
 public class TimeStationPersonnelDto {
-    private Long id;
+    private Long congestionId;
     private String station;
+    private String line;
     private int oneRide;
     private int twoRide;
     private int threeRide;
@@ -37,11 +38,13 @@ public class TimeStationPersonnelDto {
     private int twentytwoRide;
     private int twentythreeRide;
     private int midnightRide;
+    private String recordMonth;
 
     @Builder
-    public TimeStationPersonnelDto(Long id, String station, int oneRide, int twoRide, int threeRide, int fourRide, int fiveRide, int sixRide, int sevenRide, int eightRide, int nineRide, int tenRide, int elevenRide, int twelveRide, int thirteenRide, int fourteenRide, int fifteenRide, int sixteenRide, int seventeenRide, int eighteenRide, int nineteenRide, int twentyRide, int twentyoneRide, int twentytwoRide, int twentythreeRide, int midnightRide) {
-        this.id = id;
+    public TimeStationPersonnelDto(Long congestionId, String station, String line, int oneRide, int twoRide, int threeRide, int fourRide, int fiveRide, int sixRide, int sevenRide, int eightRide, int nineRide, int tenRide, int elevenRide, int twelveRide, int thirteenRide, int fourteenRide, int fifteenRide, int sixteenRide, int seventeenRide, int eighteenRide, int nineteenRide, int twentyRide, int twentyoneRide, int twentytwoRide, int twentythreeRide, int midnightRide, String recordMonth) {
+        this.congestionId = congestionId;
         this.station = station;
+        this.line = line;
         this.oneRide = oneRide;
         this.twoRide = twoRide;
         this.threeRide = threeRide;
@@ -66,6 +69,7 @@ public class TimeStationPersonnelDto {
         this.twentytwoRide = twentytwoRide;
         this.twentythreeRide = twentythreeRide;
         this.midnightRide = midnightRide;
+        this.recordMonth = recordMonth;
     }
 
     public List<TimeStationPersonnel> toEntityList(List<TimeStationPersonnelDto> jsonSameStationDtoList) {
@@ -73,6 +77,7 @@ public class TimeStationPersonnelDto {
         for(TimeStationPersonnelDto timeStationPersonnelDto : jsonSameStationDtoList) {
             TimeStationPersonnel timeStationPersonnel = TimeStationPersonnel.builder()
                     .station(timeStationPersonnelDto.getStation())
+                    .line(timeStationPersonnelDto.getLine())
                     .oneRide(timeStationPersonnelDto.getOneRide())
                     .twoRide(timeStationPersonnelDto.getTwoRide())
                     .threeRide(timeStationPersonnelDto.getThreeRide())
@@ -97,6 +102,7 @@ public class TimeStationPersonnelDto {
                     .twentytwoRide(timeStationPersonnelDto.getTwentytwoRide())
                     .twentythreeRide(timeStationPersonnelDto.getTwentythreeRide())
                     .midnightRide(timeStationPersonnelDto.getMidnightRide())
+                    .recordMonth(timeStationPersonnelDto.getRecordMonth())
                     .build();
             jsonSameStationList.add(timeStationPersonnel);
         }

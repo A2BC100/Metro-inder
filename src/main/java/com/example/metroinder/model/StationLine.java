@@ -6,23 +6,26 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.ColumnDefault;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
+
+import javax.persistence.*;
 
 @Entity
 @NoArgsConstructor
 @Getter
 @Setter
-@Builder
-public class TimeStationPersonnel extends Timestamped {
+public class StationLine {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    private Long congestionId;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long stationLineId;
 
-    private String station;
-    private String line;
+    @ManyToOne
+    @JoinColumn(name="station")
+    private CapitalareaStation capitalareaStation;
+
+    @ManyToOne
+    @JoinColumn(name = "line")
+    private Line line;
+    private int lineOrder;
     @ColumnDefault("0")
     private int oneRide;
     @ColumnDefault("0")
@@ -71,12 +74,12 @@ public class TimeStationPersonnel extends Timestamped {
     private int twentythreeRide;
     @ColumnDefault("0")
     private int midnightRide;
-    private String recordMonth;
+
     @Builder
-    public TimeStationPersonnel(Long congestionId, String station, String line, int oneRide, int twoRide, int threeRide, int fourRide, int fiveRide, int sixRide, int sevenRide, int eightRide, int nineRide, int tenRide, int elevenRide, int twelveRide, int thirteenRide, int fourteenRide, int fifteenRide, int sixteenRide, int seventeenRide, int eighteenRide, int nineteenRide, int twentyRide, int twentyoneRide, int twentytwoRide, int twentythreeRide, int midnightRide, String recordMonth) {
-        this.congestionId = congestionId;
-        this.station = station;
+    public StationLine(CapitalareaStation capitalareaStation, Line line, int lineOrder, int oneRide, int twoRide, int threeRide, int fourRide, int fiveRide, int sixRide, int sevenRide, int eightRide, int nineRide, int tenRide, int elevenRide, int twelveRide, int thirteenRide, int fourteenRide, int fifteenRide, int sixteenRide, int seventeenRide, int eighteenRide, int nineteenRide, int twentyRide, int twentyoneRide, int twentytwoRide, int twentythreeRide, int midnightRide) {
+        this.capitalareaStation = capitalareaStation;
         this.line = line;
+        this.lineOrder = lineOrder;
         this.oneRide = oneRide;
         this.twoRide = twoRide;
         this.threeRide = threeRide;
@@ -101,6 +104,5 @@ public class TimeStationPersonnel extends Timestamped {
         this.twentytwoRide = twentytwoRide;
         this.twentythreeRide = twentythreeRide;
         this.midnightRide = midnightRide;
-        this.recordMonth = recordMonth;
     }
 }

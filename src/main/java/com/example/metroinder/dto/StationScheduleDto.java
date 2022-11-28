@@ -1,19 +1,18 @@
 package com.example.metroinder.dto;
 
 import com.example.metroinder.model.StationSchedule;
-import com.example.metroinder.model.TimeStationPersonnel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 @Getter
 @NoArgsConstructor
 public class StationScheduleDto {
     private Long stationId;
+    private String line;
     private String station;
     private String arrivalTime;
     private String  departureTime;
@@ -24,8 +23,9 @@ public class StationScheduleDto {
     private String express;
 
     @Builder
-    public StationScheduleDto(Long stationId, String station, String arrivalTime, String departureTime, String arrivalStation, String departureStation, String week, String upDown, String express) {
+    public StationScheduleDto(Long stationId, String line, String station, String arrivalTime, String departureTime, String arrivalStation, String departureStation, String week, String upDown, String express) {
         this.stationId = stationId;
+        this.line = line;
         this.station = station;
         this.arrivalTime = arrivalTime;
         this.departureTime = departureTime;
@@ -41,6 +41,7 @@ public class StationScheduleDto {
         for(StationScheduleDto stationScheduleDto : stationScheduleDtoList) {
             StationSchedule stationSchedule = StationSchedule.builder()
                     .station(stationScheduleDto.getStation())
+                    .line(stationScheduleDto.getLine())
                     .arrivalTime(stationScheduleDto.getArrivalTime())
                     .departureTime(stationScheduleDto.getDepartureTime())
                     .arrivalStation(stationScheduleDto.getArrivalStation())

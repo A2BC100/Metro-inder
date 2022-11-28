@@ -1,16 +1,16 @@
 package com.example.metroinder.service;
 
 import com.example.metroinder.dto.StationScheduleDto;
-import com.example.metroinder.dto.TimeStationPersonnelDto;
+import com.example.metroinder.model.CapitalareaStation;
 import com.example.metroinder.model.StationSchedule;
-import com.example.metroinder.model.TimeStationPersonnel;
+import com.example.metroinder.repository.CapitalareaStationRepository;
+import com.example.metroinder.repository.StationLineRepository;
 import com.example.metroinder.repository.StationScheduleRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
@@ -22,9 +22,9 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.Map;
 
 @Component
 @Service
@@ -32,10 +32,10 @@ import java.util.regex.Pattern;
 @Slf4j
 public class StationScheduleService {
     @Value("${generalKey}")
-    public String generalKey;
+    private String generalKey;
 
-    @Autowired
-    StationScheduleRepository stationScheduleRepository;
+    private final StationScheduleRepository stationScheduleRepository;
+    private final CapitalareaStationRepository capitalareaStationRepository;
 
     /* 입력한 역이름으로 역코드목록을 json으로 받아옴 */
     public String getStationCode(String station) throws IOException {
@@ -96,7 +96,7 @@ public class StationScheduleService {
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         conn.setRequestMethod("GET");
         conn.setRequestProperty("Content-type", "application/json");
-        System.out.println("Response code: " + conn.getResponseCode()); /* 연결에 대한 확인*/
+        //System.out.println("Response code: " + conn.getResponseCode());
         BufferedReader rd;
 
         // 서비스코드가 정상이면 200~300사이의 숫자
@@ -133,7 +133,7 @@ public class StationScheduleService {
                 if(lineNum.equals("01호선") || lineNum.equals("02호선") || lineNum.equals("03호선") || lineNum.equals("04호선") || lineNum.equals("05호선") || lineNum.equals("06호선") || lineNum.equals("07호선") || lineNum.equals("08호선")) {
                     String stationSchduleJson = getStationSchduleAPI(stationCode, week, inout);
                     // log.info("역 시간표 : " + stationSchduleJson);
-                    setStationScheduleSave(stationSchduleJson);
+                    setStationScheduleSave(stationSchduleJson, lineNum);
                 }
             }
         } catch (Exception e) {
@@ -141,7 +141,7 @@ public class StationScheduleService {
         }
     }
     /* 열차 시간표 저장 */
-    public void setStationScheduleSave(String json) {
+    public void setStationScheduleSave(String json, String line) {
         try {
             JSONParser jsonParser = new JSONParser();
             JSONObject jsonObject = (JSONObject) jsonParser.parse(json);
@@ -170,6 +170,7 @@ public class StationScheduleService {
 
                 StationScheduleDto stationScheduleDto = StationScheduleDto.builder()
                         .station((String) row.get("STATION_NM"))
+                        .line(line)
                         .arrivalTime((String) row.get("LEFTTIME"))
                         .departureTime((String) row.get("ARRIVETIME"))
                         .arrivalStation((String) row.get("SUBWAYSNAME"))
@@ -190,7 +191,46 @@ public class StationScheduleService {
         }
     }
 
+    //혼잡도데이터가 담겨있는 Entity에서 겹치지 않는(distinct) 역이름을 list에 담아오기 위한 메소드
+    public List<String> stationDistinctList() {
+        List<String> stationList = capitalareaStationRepository.findDistinctStation();
+        return stationList;
+    }
 
+    /*public Map findStationSchedule(String data) {
+        Map json = new HashMap<String, Object>();
 
+        StationScheduleRepository stationScheduleRepository;
+        StationLineRepository.SameStationPeople stationLine = stationLineRepository.stationCongestion(data);
+        log.info(stationLine.getStation());
+        log.info(""+stationLine.getEighteenRide());
+        json.put("station", stationLine.getStation());
+        json.put("oneRide", Long.valueOf(stationLine.getOneRide()).intValue());
+        json.put("twoRide", Long.valueOf(stationLine.getTwoRide()).intValue());
+        json.put("threeRide", Long.valueOf(stationLine.getThreeRide()).intValue());
+        json.put("fourRide", Long.valueOf(stationLine.getFourRide()).intValue());
+        json.put("fiveRide", Long.valueOf(stationLine.getFiveRide()).intValue());
+        json.put("sixRide", Long.valueOf(stationLine.getSixRide()).intValue());
+        json.put("sevenRide", Long.valueOf(stationLine.getSevenRide()).intValue());
+        json.put("eightRide", Long.valueOf(stationLine.getEightRide()).intValue());
+        json.put("nineRide", Long.valueOf(stationLine.getNineRide()).intValue());
+        json.put("tenRide", Long.valueOf(stationLine.getTenRide()).intValue());
+        json.put("elevenRide", Long.valueOf(stationLine.getElevenRide()).intValue());
+        json.put("twelveRide", Long.valueOf(stationLine.getTwelveRide()).intValue());
+        json.put("thirteenRide", Long.valueOf(stationLine.getThirteenRide()).intValue());
+        json.put("fourteenRide", Long.valueOf(stationLine.getFourteenRide()).intValue());
+        json.put("fifteenRide", Long.valueOf(stationLine.getFifteenRide()).intValue());
+        json.put("sixteenRide", Long.valueOf(stationLine.getSixteenRide()).intValue());
+        json.put("seventeenRide", Long.valueOf(stationLine.getSeventeenRide()).intValue());
+        json.put("eighteenRide", Long.valueOf(stationLine.getEighteenRide()).intValue());
+        json.put("nineteenRide", Long.valueOf(stationLine.getNineteenRide()).intValue());
+        json.put("twentyRide", Long.valueOf(stationLine.getTwentyRide()).intValue());
+        json.put("twentyoneRide", Long.valueOf(stationLine.getTwentyoneRide()).intValue());
+        json.put("twentytwoRide", Long.valueOf(stationLine.getTwentytwoRide()).intValue());
+        json.put("twentythreeRide", Long.valueOf(stationLine.getTwentythreeRide()).intValue());
+        json.put("midnightRide", Long.valueOf(stationLine.getMidnightRide()).intValue());
+
+        return json;
+    }*/
 
 }
