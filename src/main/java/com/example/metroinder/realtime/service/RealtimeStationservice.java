@@ -29,8 +29,8 @@ public class RealtimeStationservice {
     private RateLimiter throttle = RateLimiter.create(0.05);
 
 
-    public String realtimeStaion(RealTimeStationRequest realTimeStationRequest) throws IOException {
-        station = realTimeStationRequest.getStation();
+    public String realtimeStaion(String station) throws IOException {
+        station = this.station;
         throttle.acquire();
         StringBuilder urlBuilder = new StringBuilder("http://swopenAPI.seoul.go.kr");
         urlBuilder.append("/" + URLEncoder.encode("api","UTF-8"));
