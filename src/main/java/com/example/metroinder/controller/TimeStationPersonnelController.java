@@ -34,6 +34,7 @@ public class TimeStationPersonnelController {
     @ResponseBody
     public Map returnPeopleCount(@RequestParam("stationName") String stationName) {
         Map json = timeStationPersonnelService.findSameStationPeople(stationName);
+        System.out.println(json);
         return json;
     }
 
