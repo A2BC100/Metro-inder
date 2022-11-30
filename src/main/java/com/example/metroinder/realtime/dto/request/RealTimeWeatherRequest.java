@@ -5,15 +5,8 @@ import lombok.Setter;
 
 @Setter
 @Getter
-public class RealTimeRequest {
-    public class RealTimeStationRequest{
-        public String station;
-    }
-    public class RealTimeWeatherResquest{
+public class RealTimeWeatherRequest {
         private double lat;
-
         private double lon;
-
     }
 
-}

@@ -1,6 +1,6 @@
 package com.example.metroinder.realtime.service;
 
-import com.example.metroinder.realtime.dto.request.RealTimeRequest;
+import com.example.metroinder.realtime.dto.request.RealTimeStationRequest;
 import com.revinate.guava.util.concurrent.RateLimiter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -24,15 +24,13 @@ public class RealtimeStationservice {
 
     private final String realTimeUrl = "http://swopenAPI.seoul.go.kr/api/subway";
 
-    String station;
+    private String station;
 
     private RateLimiter throttle = RateLimiter.create(0.05);
 
-    public String  getStation(RealTimeRequest.RealTimeStationRequest realTimeStationRequest){
-        return this.station = realTimeStationRequest.station;
-    }
 
-    public String realtimeStaion() throws IOException {
+    public String realtimeStaion(RealTimeStationRequest realTimeStationRequest) throws IOException {
+        station = realTimeStationRequest.getStation();
         throttle.acquire();
         StringBuilder urlBuilder = new StringBuilder("http://swopenAPI.seoul.go.kr");
         urlBuilder.append("/" + URLEncoder.encode("api","UTF-8"));

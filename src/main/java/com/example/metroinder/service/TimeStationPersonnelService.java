@@ -36,7 +36,7 @@ import java.util.regex.Pattern;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-@NoArgsConstructor
+
 public class TimeStationPersonnelService {
     @Value("${generalKey}")
     public String generalKey;

@@ -1,24 +1,29 @@
 package com.example.metroinder.realtime.controller;
 
-import com.example.metroinder.realtime.dto.request.RealTimeRequest;
+import com.example.metroinder.realtime.dto.request.RealTimeStationRequest;
+import com.example.metroinder.realtime.dto.request.RealTimeWeatherRequest;
 import com.example.metroinder.realtime.service.RealtimeStationservice;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 
 
 @Controller
 @RequiredArgsConstructor
+@RequestMapping("api/realtime")
 public class RealtimeController {
     private final RealtimeStationservice realtimeStationservice;
-    @GetMapping("/getRealtimeStation")
+    @GetMapping("/station")
     @ResponseBody
-    public ResponseEntity getRealtimeStation(@RequestParam RealTimeRequest.RealTimeStationRequest realTimeStationRequest) throws Exception {
-        realtimeStationservice.getStation(realTimeStationRequest);
+    public ResponseEntity getRealtimeStation(@RequestBody RealTimeStationRequest realTimeStationRequest) throws Exception {
+       String realtimeJson = realtimeStationservice.realtimeStaion(realTimeStationRequest);
+        return new ResponseEntity(realtimeJson,HttpStatus.OK);
+    }
+    @GetMapping("/weather")
+    public ResponseEntity getRealtimeWeather(@RequestBody RealTimeWeatherRequest realTimeWeatherResquest) throws Exception {
+
         return new ResponseEntity(HttpStatus.OK);
     }
 
