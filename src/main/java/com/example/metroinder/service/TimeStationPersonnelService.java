@@ -8,7 +8,6 @@ import com.example.metroinder.model.TimeStationPersonnel;
 import com.example.metroinder.repository.CapitalareaStationRepository;
 import com.example.metroinder.repository.StationLineRepository;
 import com.example.metroinder.repository.TimeStationPersonnelRepository;
-import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.json.simple.JSONArray;
@@ -33,23 +32,18 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 @Component
-@Service
 @RequiredArgsConstructor
-@Slf4j
-
+@Service
 public class TimeStationPersonnelService {
     @Value("${generalKey}")
-    public String generalKey;
-
+    String generalKey;
     Pattern PATTERN_BRACKET = Pattern.compile("\\([^\\(\\)]+\\)");
     String VOID = "";
 
-    @Autowired
-    TimeStationPersonnelRepository timeStationPersonnelRepository;
-    @Autowired
-    CapitalareaStationRepository capitalareaStationRepository;
-    @Autowired
-    StationLineRepository stationLineRepository;
+    private final TimeStationPersonnelRepository timeStationPersonnelRepository;
+    private final CapitalareaStationRepository capitalareaStationRepository;
+    private final StationLineRepository stationLineRepository;
+
     // 서울시 지하철 호선별 역별 시간대별 승하차 인원 정보 API 호출 및 저장
     public void peopleInformationBySeoulAtTimeSave(String dataScope)  throws IOException {
         try {
@@ -326,33 +320,31 @@ public class TimeStationPersonnelService {
 
         CapitalareaStation station = capitalareaStationRepository.findByStation(data);
         StationLineRepository.SameStationPeople stationLine = stationLineRepository.stationCongestion(data);
-        log.info(stationLine.getStation());
-        log.info(""+stationLine.getEighteenRide());
         json.put("station", stationLine.getStation());
-        json.put("oneRide", Long.valueOf(stationLine.getOneRide()).intValue());
-        json.put("twoRide", Long.valueOf(stationLine.getTwoRide()).intValue());
-        json.put("threeRide", Long.valueOf(stationLine.getThreeRide()).intValue());
-        json.put("fourRide", Long.valueOf(stationLine.getFourRide()).intValue());
-        json.put("fiveRide", Long.valueOf(stationLine.getFiveRide()).intValue());
-        json.put("sixRide", Long.valueOf(stationLine.getSixRide()).intValue());
-        json.put("sevenRide", Long.valueOf(stationLine.getSevenRide()).intValue());
-        json.put("eightRide", Long.valueOf(stationLine.getEightRide()).intValue());
-        json.put("nineRide", Long.valueOf(stationLine.getNineRide()).intValue());
-        json.put("tenRide", Long.valueOf(stationLine.getTenRide()).intValue());
-        json.put("elevenRide", Long.valueOf(stationLine.getElevenRide()).intValue());
-        json.put("twelveRide", Long.valueOf(stationLine.getTwelveRide()).intValue());
-        json.put("thirteenRide", Long.valueOf(stationLine.getThirteenRide()).intValue());
-        json.put("fourteenRide", Long.valueOf(stationLine.getFourteenRide()).intValue());
-        json.put("fifteenRide", Long.valueOf(stationLine.getFifteenRide()).intValue());
-        json.put("sixteenRide", Long.valueOf(stationLine.getSixteenRide()).intValue());
-        json.put("seventeenRide", Long.valueOf(stationLine.getSeventeenRide()).intValue());
-        json.put("eighteenRide", Long.valueOf(stationLine.getEighteenRide()).intValue());
-        json.put("nineteenRide", Long.valueOf(stationLine.getNineteenRide()).intValue());
-        json.put("twentyRide", Long.valueOf(stationLine.getTwentyRide()).intValue());
-        json.put("twentyoneRide", Long.valueOf(stationLine.getTwentyoneRide()).intValue());
-        json.put("twentytwoRide", Long.valueOf(stationLine.getTwentytwoRide()).intValue());
-        json.put("twentythreeRide", Long.valueOf(stationLine.getTwentythreeRide()).intValue());
-        json.put("midnightRide", Long.valueOf(stationLine.getMidnightRide()).intValue());
+        json.put("1", Long.valueOf(stationLine.getOneRide()).intValue());
+        json.put("2", Long.valueOf(stationLine.getTwoRide()).intValue());
+        json.put("3", Long.valueOf(stationLine.getThreeRide()).intValue());
+        json.put("4", Long.valueOf(stationLine.getFourRide()).intValue());
+        json.put("5", Long.valueOf(stationLine.getFiveRide()).intValue());
+        json.put("6", Long.valueOf(stationLine.getSixRide()).intValue());
+        json.put("7", Long.valueOf(stationLine.getSevenRide()).intValue());
+        json.put("8", Long.valueOf(stationLine.getEightRide()).intValue());
+        json.put("9", Long.valueOf(stationLine.getNineRide()).intValue());
+        json.put("10", Long.valueOf(stationLine.getTenRide()).intValue());
+        json.put("11", Long.valueOf(stationLine.getElevenRide()).intValue());
+        json.put("12", Long.valueOf(stationLine.getTwelveRide()).intValue());
+        json.put("13", Long.valueOf(stationLine.getThirteenRide()).intValue());
+        json.put("14", Long.valueOf(stationLine.getFourteenRide()).intValue());
+        json.put("15", Long.valueOf(stationLine.getFifteenRide()).intValue());
+        json.put("16", Long.valueOf(stationLine.getSixteenRide()).intValue());
+        json.put("17", Long.valueOf(stationLine.getSeventeenRide()).intValue());
+        json.put("18", Long.valueOf(stationLine.getEighteenRide()).intValue());
+        json.put("19", Long.valueOf(stationLine.getNineteenRide()).intValue());
+        json.put("20", Long.valueOf(stationLine.getTwentyRide()).intValue());
+        json.put("21", Long.valueOf(stationLine.getTwentyoneRide()).intValue());
+        json.put("22", Long.valueOf(stationLine.getTwentytwoRide()).intValue());
+        json.put("23", Long.valueOf(stationLine.getTwentythreeRide()).intValue());
+        json.put("24", Long.valueOf(stationLine.getMidnightRide()).intValue());
 
         return json;
     }
@@ -371,6 +363,4 @@ public class TimeStationPersonnelService {
         }
         return pureText;
     }
-
-
 }

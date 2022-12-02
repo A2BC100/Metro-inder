@@ -5,6 +5,7 @@ import com.example.metroinder.model.UserAccount;
 import lombok.Getter;
 import lombok.ToString;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 
 import java.util.ArrayList;
@@ -13,7 +14,7 @@ import java.util.Map;
 
 @Getter
 @ToString
-public class PrincipalDetails implements OAuth2User {
+public class PrincipalDetails implements UserDetails, OAuth2User {
     private UserAccount userAccount;
     private OAuth2UserInfo oAuth2UserInfo;
 
@@ -35,7 +36,6 @@ public class PrincipalDetails implements OAuth2User {
         });
         return collect;
     }
-/*
     @Override
     public String getPassword() {
         return userAccount.getPassword();
@@ -66,8 +66,6 @@ public class PrincipalDetails implements OAuth2User {
     public boolean isEnabled() {
         return true;
     }
-
-*/
 
     @Override
     public Map<String, Object> getAttributes() {
