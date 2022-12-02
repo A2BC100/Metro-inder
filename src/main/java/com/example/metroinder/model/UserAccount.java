@@ -16,7 +16,7 @@ public class UserAccount extends Timestamped {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String username;
-    @Setter
+    @Getter
     private String password;
     private String email;
     @Enumerated(EnumType.STRING)
