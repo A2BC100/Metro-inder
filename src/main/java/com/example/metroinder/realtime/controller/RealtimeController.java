@@ -3,6 +3,7 @@ package com.example.metroinder.realtime.controller;
 import com.example.metroinder.realtime.dto.request.RealTimeWeatherRequest;
 import com.example.metroinder.realtime.service.RealtimeStationservice;
 import lombok.RequiredArgsConstructor;
+import org.json.simple.JSONObject;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -17,7 +18,7 @@ public class RealtimeController {
     @GetMapping("/station")
     @ResponseBody
     public ResponseEntity getRealtimeStation(@RequestParam("stationName") String station) throws Exception {
-       String realtimeJson = realtimeStationservice.realtimeStaion(station);
+       JSONObject realtimeJson = realtimeStationservice.realtimeStaion(station);
         return new ResponseEntity(realtimeJson,HttpStatus.OK);
     }
     @GetMapping("/weather")
