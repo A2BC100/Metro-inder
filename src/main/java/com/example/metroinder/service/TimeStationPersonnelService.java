@@ -8,6 +8,7 @@ import com.example.metroinder.model.TimeStationPersonnel;
 import com.example.metroinder.repository.CapitalareaStationRepository;
 import com.example.metroinder.repository.StationLineRepository;
 import com.example.metroinder.repository.TimeStationPersonnelRepository;
+import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.json.simple.JSONArray;
@@ -35,6 +36,7 @@ import java.util.regex.Pattern;
 @Service
 @RequiredArgsConstructor
 @Slf4j
+
 public class TimeStationPersonnelService {
     @Value("${generalKey}")
     public String generalKey;
@@ -369,4 +371,6 @@ public class TimeStationPersonnelService {
         }
         return pureText;
     }
+
+
 }
