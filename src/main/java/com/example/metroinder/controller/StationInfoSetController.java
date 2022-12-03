@@ -27,7 +27,7 @@ public class StationInfoSetController {
         List<String> stationList = stationScheduleService.stationDistinctList();
 
         /* 오래걸려서 일단 주석처리 */
-        /*for(int i = 0; i < stationList.size(); i++) {
+        for(int i = 0; i < stationList.size(); i++) {
             //log.info("역이름 테스트("+ i + ") : " +stationList.get(i));
             String json = stationScheduleService.getStationCode(stationList.get(i));
             stationScheduleService.stationScheduleCall(json, "1", "1");
@@ -37,7 +37,7 @@ public class StationInfoSetController {
             stationScheduleService.stationScheduleCall(json, "3", "1");
             stationScheduleService.stationScheduleCall(json, "3", "2");
 
-        }*/
+        }
         stationInformationSetService.getStationDegreeOfCongestionAvg();
     }
 }

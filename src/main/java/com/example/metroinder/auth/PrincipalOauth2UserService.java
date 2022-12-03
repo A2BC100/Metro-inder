@@ -17,12 +17,12 @@ import org.springframework.stereotype.Service;
 
 import java.util.UUID;
 
-@RequiredArgsConstructor
+
 @Service
+@RequiredArgsConstructor
 //DefaultOAuth2UserService는 OAuth2UserService를 구현
 public class PrincipalOauth2UserService extends DefaultOAuth2UserService {
-    private UserAccountRepository userAccountRepository;
-    private BCryptPasswordEncoder bCryptPasswordEncoder;
+    private final UserAccountRepository userAccountRepository;
 
     @Override
     public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
@@ -42,6 +42,7 @@ public class PrincipalOauth2UserService extends DefaultOAuth2UserService {
         String providerId = oAuth2UserInfo.getProviderId();
         String username = provider+"_"+providerId;
         String uuid = UUID.randomUUID().toString().substring(0, 6);
+        BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();
         String password = bCryptPasswordEncoder.encode("패스워드"+uuid);
         String email = oAuth2UserInfo.getEmail();
         UserRole role = UserRole.ROLE_USER;
