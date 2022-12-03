@@ -18,14 +18,15 @@ public class RealtimeController {
     @GetMapping("/station")
     @ResponseBody
     public ResponseEntity getRealtimeStation(@RequestParam("stationName") String station) throws Exception {
-       JSONObject realtimeJson = realtimeStationservice.realtimeStaion(station);
-        return new ResponseEntity(realtimeJson,HttpStatus.OK);
+       JSONObject realtimeStaion = realtimeStationservice.realtimeStaion(station);
+        return new ResponseEntity(realtimeStaion,HttpStatus.OK);
     }
     @GetMapping("/weather")
     @ResponseBody
-    public ResponseEntity getRealtimeWeather(@RequestBody RealTimeWeatherRequest realTimeWeatherResquest) throws Exception {
+    public ResponseEntity getRealtimeWeather(@RequestParam ("lat")double lat,@RequestParam("lon") double lon,@RequestParam("date")String date,@RequestParam("time")String time) throws Exception {
 
-        return new ResponseEntity(HttpStatus.OK);
+        JSONObject realtiemWeather = realtimeStationservice.realtiemWeather(lat,lon,date,time);
+        return new ResponseEntity(realtiemWeather,HttpStatus.OK);
     }
 
 }

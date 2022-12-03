@@ -1,4 +1,4 @@
-package com.example.metroinder.realtime.service;
+package com.example.metroinder.realtime.model;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -43,14 +43,12 @@ public class GpsTransfer {
         double ro = Math.tan(Math.PI * 0.25 + olat * 0.5);
         ro = re * sf / Math.pow(ro, sn);
 
-        if(mode == 0 ){
+        if(mode == 0 ) {
             double ra = Math.tan(Math.PI * 0.25 + (gpsTransfer.getLat()) * DEGRAD * 0.5);
-            ra = re * sf /Math.pow(ra,sn);
+            ra = re * sf / Math.pow(ra, sn);
             double theta = gpsTransfer.getLon() * DEGRAD - olon;
-            if(theta > Math.PI) theta -= 2.0 * Math.PI;
-            if(theta < -Math.PI) theta += 2.0 * Math.PI;
-
+            if (theta > Math.PI) theta -= 2.0 * Math.PI;
+            if (theta < -Math.PI) theta += 2.0 * Math.PI;
         }
-
     }
 }
