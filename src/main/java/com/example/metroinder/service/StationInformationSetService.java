@@ -17,9 +17,11 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.List;
 
@@ -36,8 +38,8 @@ public class StationInformationSetService {
     public void setStationInformation()  throws IOException {
         try {
             JSONParser jsonParser = new JSONParser();
-            Reader reader = new FileReader("src/main/resources/static/json/lines.json");
-            JSONArray jsonArray = (JSONArray) jsonParser.parse(reader);
+            ClassPathResource resource = new ClassPathResource("static/json/lines.json");
+            JSONArray jsonArray = (JSONArray) jsonParser.parse(new InputStreamReader(resource.getInputStream(), "UTF-8"));
             String stnLine = "";
             int routeOrder = 1;
 
@@ -104,8 +106,8 @@ public class StationInformationSetService {
     public void setLetLon() throws IOException, ParseException, NullPointerException {
         try {
             JSONParser jsonParser = new JSONParser();
-            Reader reader = new FileReader("src/main/resources/static/json/station_coordinate.json");
-            JSONArray jsonArray = (JSONArray) jsonParser.parse(reader);
+            ClassPathResource resource = new ClassPathResource("static/json/station_coordinate.json");
+            JSONArray jsonArray = (JSONArray) jsonParser.parse(new InputStreamReader(resource.getInputStream(), "UTF-8"));
             //log.info(""+ jsonArray);
             for (int count = 0; count < jsonArray.size(); count++) {
                 JSONObject row = (JSONObject) jsonArray.get(count);

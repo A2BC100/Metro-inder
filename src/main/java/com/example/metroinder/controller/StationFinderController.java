@@ -18,13 +18,14 @@ import java.util.List;
 public class StationFinderController {
     private final StationFinderService stationFinderService;
 
-    /*@GetMapping("/test2")
-    public void testGetDirections()  {
+    /*@GetMapping("/test")
+    public ResponseEntity testGetDirections()  {
         stationFinderService.stationAllListSet();
         stationFinderService.find(stationFinderService., "신길");
         List<Station> findLoad = stationFinderService.getOpenList();
         for(Station station : findLoad) {
             log.info(station.getName());
         }
+
     }*/
 }
