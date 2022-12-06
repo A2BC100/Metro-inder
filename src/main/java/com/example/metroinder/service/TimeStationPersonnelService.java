@@ -316,11 +316,11 @@ public class TimeStationPersonnelService {
 
     // 혼잡도 리턴을 위한 메소드
     public Map findSameStationPeople(String data) {
-        Map json = new HashMap<String, Object>();
+        Map<String, Object> json = new HashMap<String, Object>();
 
         CapitalareaStation station = capitalareaStationRepository.findByStation(data);
-        StationLineRepository.SameStationPeople stationLine = stationLineRepository.stationCongestion(data);
-        json.put("station", stationLine.getStation());
+        StationLineRepository.SameStationPeople stationLine = stationLineRepository.stationCongestion(station.getStationId());
+        json.put("station", data);
         json.put("1", Long.valueOf(stationLine.getOneRide()).intValue());
         json.put("2", Long.valueOf(stationLine.getTwoRide()).intValue());
         json.put("3", Long.valueOf(stationLine.getThreeRide()).intValue());

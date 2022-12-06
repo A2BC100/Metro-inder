@@ -4,8 +4,11 @@ import com.example.metroinder.service.StationInformationSetService;
 import com.example.metroinder.service.StationScheduleService;
 import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.json.simple.parser.ParseException;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 
 
@@ -14,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.io.IOException;
 import java.util.List;
 
+@Slf4j
 @RestController
 @AllArgsConstructor
 public class StationInfoSetController {
@@ -21,7 +25,8 @@ public class StationInfoSetController {
     private final StationScheduleService stationScheduleService;
 
     @GetMapping("/setInfo")
-    public void setInfo() throws IOException, ParseException, NullPointerException {
+    public ResponseEntity setInfo() throws IOException, ParseException, NullPointerException {
+        log.info("데이터 저장중...");
         stationInformationSetService.setStationInformation();
         stationInformationSetService.setLetLon();
         List<String> stationList = stationScheduleService.stationDistinctList();
@@ -39,5 +44,7 @@ public class StationInfoSetController {
 
         }
         stationInformationSetService.getStationDegreeOfCongestionAvg();
+        log.info("데이터 저장완료");
+        return new ResponseEntity(HttpStatus.OK);
     }
 }
