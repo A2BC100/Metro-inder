@@ -17,7 +17,7 @@ import javax.persistence.Id;
 @Builder
 public class StationSchedule extends Timestamped {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long stationId;
     private String line;
     private String station;

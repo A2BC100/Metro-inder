@@ -1,7 +1,11 @@
 package com.example.metroinder.realtime.service;
 
-import com.example.metroinder.realtime.dto.request.RealTimeStationRequest;
+
 import com.revinate.guava.util.concurrent.RateLimiter;
+
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
@@ -12,6 +16,7 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
+
 
 @Component
 @Service
@@ -24,13 +29,11 @@ public class RealtimeStationservice {
 
     private final String realTimeUrl = "http://swopenAPI.seoul.go.kr/api/subway";
 
-    private String station;
 
     private RateLimiter throttle = RateLimiter.create(0.05);
 
 
-    public String realtimeStaion(RealTimeStationRequest realTimeStationRequest) throws IOException {
-        station = realTimeStationRequest.getStation();
+    public JSONObject realtimeStaion(String station) throws IOException, ParseException {
         throttle.acquire();
         StringBuilder urlBuilder = new StringBuilder("http://swopenAPI.seoul.go.kr");
         urlBuilder.append("/" + URLEncoder.encode("api","UTF-8"));
@@ -62,7 +65,10 @@ public class RealtimeStationservice {
         Br.close();
         conn.disconnect();
 
-        return sb.toString();
+        JSONParser parser = new JSONParser();
+        Object obj = parser.parse(sb.toString());
+        JSONObject jsonObj = (JSONObject) obj;
+        return jsonObj;
     }
 
 }

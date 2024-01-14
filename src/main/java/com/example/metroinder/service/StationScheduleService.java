@@ -1,10 +1,8 @@
 package com.example.metroinder.service;
 
 import com.example.metroinder.dto.StationScheduleDto;
-import com.example.metroinder.model.CapitalareaStation;
 import com.example.metroinder.model.StationSchedule;
 import com.example.metroinder.repository.CapitalareaStationRepository;
-import com.example.metroinder.repository.StationLineRepository;
 import com.example.metroinder.repository.StationScheduleRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -197,38 +195,32 @@ public class StationScheduleService {
         return stationList;
     }
 
-    /*public Map findStationSchedule(String data) {
+    /*public Map findStationSchedule(String stationName) {
         Map json = new HashMap<String, Object>();
+        Map weekDivision = new HashMap<String, Object>();
 
-        StationScheduleRepository stationScheduleRepository;
-        StationLineRepository.SameStationPeople stationLine = stationLineRepository.stationCongestion(data);
-        log.info(stationLine.getStation());
-        log.info(""+stationLine.getEighteenRide());
-        json.put("station", stationLine.getStation());
-        json.put("oneRide", Long.valueOf(stationLine.getOneRide()).intValue());
-        json.put("twoRide", Long.valueOf(stationLine.getTwoRide()).intValue());
-        json.put("threeRide", Long.valueOf(stationLine.getThreeRide()).intValue());
-        json.put("fourRide", Long.valueOf(stationLine.getFourRide()).intValue());
-        json.put("fiveRide", Long.valueOf(stationLine.getFiveRide()).intValue());
-        json.put("sixRide", Long.valueOf(stationLine.getSixRide()).intValue());
-        json.put("sevenRide", Long.valueOf(stationLine.getSevenRide()).intValue());
-        json.put("eightRide", Long.valueOf(stationLine.getEightRide()).intValue());
-        json.put("nineRide", Long.valueOf(stationLine.getNineRide()).intValue());
-        json.put("tenRide", Long.valueOf(stationLine.getTenRide()).intValue());
-        json.put("elevenRide", Long.valueOf(stationLine.getElevenRide()).intValue());
-        json.put("twelveRide", Long.valueOf(stationLine.getTwelveRide()).intValue());
-        json.put("thirteenRide", Long.valueOf(stationLine.getThirteenRide()).intValue());
-        json.put("fourteenRide", Long.valueOf(stationLine.getFourteenRide()).intValue());
-        json.put("fifteenRide", Long.valueOf(stationLine.getFifteenRide()).intValue());
-        json.put("sixteenRide", Long.valueOf(stationLine.getSixteenRide()).intValue());
-        json.put("seventeenRide", Long.valueOf(stationLine.getSeventeenRide()).intValue());
-        json.put("eighteenRide", Long.valueOf(stationLine.getEighteenRide()).intValue());
-        json.put("nineteenRide", Long.valueOf(stationLine.getNineteenRide()).intValue());
-        json.put("twentyRide", Long.valueOf(stationLine.getTwentyRide()).intValue());
-        json.put("twentyoneRide", Long.valueOf(stationLine.getTwentyoneRide()).intValue());
-        json.put("twentytwoRide", Long.valueOf(stationLine.getTwentytwoRide()).intValue());
-        json.put("twentythreeRide", Long.valueOf(stationLine.getTwentythreeRide()).intValue());
-        json.put("midnightRide", Long.valueOf(stationLine.getMidnightRide()).intValue());
+        JSONArray week = new JSONArray();
+        JSONArray direction = new JSONArray();
+        JSONObject time = new JSONObject();
+        JSONArray minute = new JSONArray();
+        List<StationSchedule> stationScheduleList = stationScheduleRepository.findByStation(stationName);
+
+        List<String>
+
+        for(StationSchedule stationSchedule : stationScheduleList) {
+            String station = stationSchedule.getStation(); // 역이름
+            String express = stationSchedule.getExpress(); // 급행여부 구분
+            String upDown = stationSchedule.getUpDown(); // 상,하행 구분
+            String departureStation = stationSchedule.getDepartureStation();//출발역
+            String arrivalStation = stationSchedule.getArrivalStation(); // 도착역
+            String arrivalTime = stationSchedule.getArrivalTime(); //출발시간
+            String weekDivision = stationSchedule.getWeek(); //평일, 토요일, 휴일+일요일
+            String timeDivision = arrivalTime.substring(0,1);
+            String minuteDivision = arrivalTime.substring(3,4);
+
+        }
+
+
 
         return json;
     }*/
