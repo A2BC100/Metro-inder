@@ -1,12 +1,10 @@
 package com.example.metroinder.realtime.controller;
 
-import com.example.metroinder.realtime.dto.request.RealTimeWeatherRequest;
 import com.example.metroinder.realtime.service.RealtimeStationservice;
 import lombok.RequiredArgsConstructor;
 import org.json.simple.JSONObject;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 
