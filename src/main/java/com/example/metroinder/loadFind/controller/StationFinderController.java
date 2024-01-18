@@ -66,13 +66,13 @@ public class StationFinderController {
     }
     /*@GetMapping("/returnLoad")
     @ResponseBody
-    public ResponseEntity returnPeopleCount(@RequestParam("stationName") String stationName) {
+    public ResponseEntity<Object> returnPeopleCount(@RequestParam("stationName") String stationName) {
         stationFinderService.stationAllListSet();
         stationFinderService.find(stationFinderService., "신길");
         List<Station> findLoad = stationFinderService.getOpenList();
         for(Station station : findLoad) {
             log.info(station.getName());
         }
-        return new ResponseEntity(json, HttpStatus.OK);
+        return new ResponseEntity<>(json, HttpStatus.OK);
     }*/
 }

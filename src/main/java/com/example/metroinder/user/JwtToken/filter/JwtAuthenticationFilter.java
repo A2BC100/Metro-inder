@@ -35,20 +35,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         log.info("Request url : " + request.getRequestURI());
 
-        String att = request.getHeader("Authorization");
+        /*String att = request.getHeader("Authorization");
         String rtt = request.getHeader("Authorization-refresh");
         if(att != null) {
             log.info("AcessToken : " + att);
         }
         if(rtt != null) {
             log.info("refreshToken : " + rtt);
-        }
-
-        /*String refreshToken = jwtService.extractRefreshToken(request);
-
-        if(!jwtService.isTokenValid(refreshToken)){
-            return;
         }*/
+
         String refreshToken = jwtService.extractRefreshToken(request)
                 .filter(jwtService::isTokenValid)
                 .orElse(null);
@@ -66,10 +61,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     public void checkRefreshTokenAndReIssueAccessToken(HttpServletRequest request,  HttpServletResponse response, String refreshToken) {
         String provider = request.getHeader("provider");
         String email = request.getHeader("email");
-        UserAccount findUser = userAccountRepository.findByProviderAndEmail(provider, email);
-        findUser.setRefreshToken(refreshToken);
-        userAccountRepository.save(findUser);
-        jwtService.sendAccessAndRefreshToken(response, findUser, jwtService.createAccessTokens(findUser), jwtService.createRefreshTokens());
+        UserAccount user = userAccountRepository.findByProviderAndEmail(provider, email);
+        user.setRefreshToken(refreshToken);
+        userAccountRepository.save(user);
+        jwtService.sendAccessAndRefreshToken(response, user, jwtService.createAccessTokens(user), jwtService.createRefreshTokens(user));
     }
     public void checkAccessTokenAndAuthentication(HttpServletRequest request, HttpServletResponse response,
                                                   FilterChain filterChain) throws ServletException, IOException {

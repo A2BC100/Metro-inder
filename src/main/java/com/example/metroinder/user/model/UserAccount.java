@@ -17,14 +17,21 @@ public class UserAccount extends Timestamped {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    @Column(length = 200)
     private String username;
+    @Column(length = 50)
     private String email;
     @Enumerated(EnumType.STRING)
     @Setter
+    @Column(length = 10)
     private UserRole role;
+    @Column(length = 10)
     private String provider;    // oauth2를 이용할 경우 어떤 플랫폼을 이용하는지
+    //@Column(length = 30)
     private String providerId;  // oauth2를 이용할 경우 아이디값
+    @Column(length = 300)
     private String refreshToken; // 리프레시 토큰
+    @Column(length = 30)
     private String connectedAt;
 
     @Builder

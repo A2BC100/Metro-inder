@@ -18,7 +18,7 @@ public class StationScheduleService {
     private final CapitalareaStationRepository capitalareaStationRepository;
     private final LineRepository lineRepository;
 
-    public Map findStationSchedule(String stationName) {
+    public Map<String, Object> findStationSchedule(String stationName) {
         Map<String, Object> map = new HashMap<>();
         List<StationScheduleRepository.stationScheduleInfo> weekdayUpSchduleList = stationScheduleRepository.findWeekdayUp(stationName);
         List<StationScheduleRepository.stationScheduleInfo> weekdayDownSchduleList = stationScheduleRepository.findWeekdayDown(stationName);

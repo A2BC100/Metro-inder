@@ -9,7 +9,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.MultiValueMap;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.Date;
@@ -48,15 +47,20 @@ public class JwtService {
                 .withClaim("iss", "metroinder.co.kr")
                 .withClaim("aud", user.getUsername())
                 .withClaim("iat",new Date(now.getTime()))
+                .withClaim("provider", user.getProvider())
                 .sign(Algorithm.HMAC512(secretKey)); // HMAC512 알고리즘 사용
     }
 
     // RefreashToken 생성
-    public String createRefreshTokens() {
+    public String createRefreshTokens(UserAccount user) {
         Date now = new Date();
         return JWT.create()
                 .withSubject("RefreshToken")
                 .withExpiresAt(new Date(now.getTime() + REFRESH_TOKEN_EXPIRE_TIME))
+                .withClaim("iss", "metroinder.co.kr")
+                .withClaim("aud", user.getUsername())
+                .withClaim("iat",new Date(now.getTime()))
+                .withClaim("provider", user.getProvider())
                 .sign(Algorithm.HMAC512(secretKey));
     }
 
@@ -136,7 +140,7 @@ public class JwtService {
         headers.add(accessHeader, accessToken);
         headers.add(refreshHeader, refreshToken);
     }
-    public void loginResponseBody(Map<String, Object> map, UserAccount user) {
+    public void loginResponseBody(Map<String, String> map, UserAccount user) {
         map.put("UserName", user.getUsername());
         map.put("email", user.getEmail());
     }

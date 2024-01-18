@@ -15,9 +15,9 @@ public class StationScheduleController {
 
     @PostMapping("/returnSchedule")
     @ResponseBody
-    public ResponseEntity returnStationSchedule(@RequestParam("stationName") String stationName) throws Exception {
+    public ResponseEntity<Object> returnStationSchedule(@RequestParam("stationName") String stationName) throws Exception {
 
-        Map json = stationScheduleService.findStationSchedule(stationName);
-        return new ResponseEntity(json, HttpStatus.OK);
+        Map<String, Object> json = stationScheduleService.findStationSchedule(stationName);
+        return new ResponseEntity<>(json, HttpStatus.OK);
     }
 }

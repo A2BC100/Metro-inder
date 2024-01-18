@@ -4,26 +4,9 @@
     <meta charset="UTF-8">
     <title>Title</title>
     <style>
-        button: 1px solid #000, width 30px, height 20px;
+        a { font-size: 20px; }
     </style>
     <script>
-        function login(provider){
-            let url;
-            if(provider == 'KaKao') {
-                url = '/oauth2/authorization/kakao';
-            } else if(provider == 'Google') {
-                url = '/oauth2/authorization/google';
-            } else if(provider == 'Naver') {
-                url = '/oauth2/authorization/naver';
-            }
-            console.log(url);
-            <!--location.href = url;-->
-            const form = document.createElement('form');
-            form.setAttribute('method', 'post');
-            form.setAttribute('action', url);
-            document.body.appendChild(form);
-            form.submit();
-        }
         function sendHeaderData() {
             let request = new XMLHttpRequest();
             request.open('GET','/');
@@ -36,10 +19,9 @@
     </script>
 </head>
 <body>
-<button onclick="login('KaKao');">Kakao Login</button>
-<button onclick="login('Google');">Google Login</button>
-<button onclick="login('Naver');">Naver Login</button><br><br>
-<a href="https://kauth.kakao.com/oauth/authorize?response_type=code&client_id=34c757199de774ac66043a9ce8baef95&scope=profile_nickname%20account_email&state=0EgMKhYwV1KDpwrPOPhgPWDTCI4IwBKe0Xlgf0ETQXg%3D&redirect_uri=http://localhost:8080/auth/kakao/callback">kakao</a>
+<a href="https://kauth.kakao.com/oauth/authorize?response_type=code&client_id=34c757199de774ac66043a9ce8baef95&scope=profile_nickname%20account_email&state=0EgMKhYwV1KDpwrPOPhgPWDTCI4IwBKe0Xlgf0ETQXg%3D&redirect_uri=http://localhost:8080/auth/kakao/callback">kakao</a><br>
+<a href="https://accounts.google.com/o/oauth2/v2/auth?response_type=code&client_id=1075553197365-p3eq0psj561o8t0kr2tjmrvjc5mcv1ot.apps.googleusercontent.com&redirect_uri=http://localhost:8080/login/oauth2/code/google&scope=https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email&include_granted_scopes=true&access_type=offline">google</a><br>
+<a href="https://nid.naver.com/oauth2.0/authorize?response_type=code&client_id=_vkLlNvW2VKzQi9S1fwD&redirect_uri=http://localhost:8080/login/oauth2/code/naver&state=test">naver</a><br>
 <button onclick="sendHeaderData();">테스트</button>
 </body>
 </html>

@@ -19,9 +19,9 @@ public class TimeStationPersonnelController {
 
     @GetMapping("/returnPeopleCount")
     @ResponseBody
-    public ResponseEntity returnPeopleCount(@RequestParam("stationName") String stationName) {
-        Map json = timeStationPersonnelService.findSameStationPeople(stationName);
-        return new ResponseEntity(json, HttpStatus.OK);
+    public ResponseEntity<Object> returnPeopleCount(@RequestParam("stationName") String stationName) {
+        Map<String, Object> json = timeStationPersonnelService.findSameStationPeople(stationName);
+        return new ResponseEntity<>(json, HttpStatus.OK);
     }
 
 }

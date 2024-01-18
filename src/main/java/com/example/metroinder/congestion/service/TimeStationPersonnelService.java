@@ -16,7 +16,7 @@ public class TimeStationPersonnelService {
     private final StationLineRepository stationLineRepository;
 
     // 혼잡도 리턴을 위한 메소드
-    public Map findSameStationPeople(String data) {
+    public Map<String, Object> findSameStationPeople(String data) {
         Map<String, Object> json = new HashMap<String, Object>();
 
         CapitalareaStation station = capitalareaStationRepository.findByStation(data);
