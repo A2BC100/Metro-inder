@@ -1,8 +1,11 @@
 package com.example.metroinder.user.controller;
 
+import com.auth0.jwt.JWT;
+import com.auth0.jwt.algorithms.Algorithm;
 import com.example.metroinder.user.JwtToken.service.JwtService;
 import com.example.metroinder.user.model.UserAccount;
 import com.example.metroinder.user.service.OAuth2LoginService;
+import com.nimbusds.oauth2.sdk.token.AccessToken;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -15,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 
 @Slf4j
@@ -65,9 +69,25 @@ public class UserAccountController {
         }
     }
 
-    @GetMapping("/loginMetroinder")
+    @GetMapping("/validationAccess")
     @ResponseBody
-    public ResponseEntity<Object> validationAccess(@RequestHeader(value="Authorization") String AccessToken) {
+    public ResponseEntity<Object> validationAccess(@RequestHeader(value="Authorization") String accessToken) {
+        log.info(accessToken);
+        Optional.ofNullable(accessToken)
+                .filter(refreshToken -> accessToken.startsWith("Bearer"))
+                .map(refreshToken -> accessToken.replace("Bearer ", ""));
+        log.info(accessToken);
+        String secretKey = "c3ByaW5nLWJvb3Qtc2VjdXJpdHktand0LXR1dG9yaWFsLWppd29vbi1zcHJpbmctYm9vdC1zZWN1cml0eS1qd3QtdHV0b3JpYWwK";
+        try {
+            Optional.ofNullable(JWT.require(Algorithm.HMAC512(secretKey))
+                    .build() // 반환된 빌더로 JWT verifier 생성
+                    .verify(accessToken) // accessToken을 검증하고 유효하지 않다면 예외 발생
+                    .getClaim("aud") // 유저정보 가져오기
+                    .asString());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
         return new ResponseEntity<>(HttpStatus.OK);
     }
 }
