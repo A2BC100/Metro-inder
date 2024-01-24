@@ -30,29 +30,44 @@ public class UserAccountController {
     //@GetMapping("/login/oauth2/code/naver") //test 용
     @GetMapping("/loginMetroinder")
     @ResponseBody
-    public ResponseEntity<Object> loginMetroinder(@RequestParam("code") String code, @RequestParam(value = "provider", required = false) String provider, @RequestParam(value = "state"/*, required = false*/) String state) {
-        //provider = "NAVER";
-        provider = provider.toLowerCase();
-        log.info("naver code : " + code);
-        log.info("naver state : " + state);
-        String snsAccessToken = oAuth2LoginService.getSnsAccessToken(code, provider, state);
+    public ResponseEntity<Object> loginMetroinder(@RequestParam("code") String code, @RequestParam(value = "provider", required = false) String provider, @RequestParam(value = "state", required = false) String state) {
+        try {
+            //provider = "KAKAO";
+            provider = provider.toLowerCase();
+            log.info("/loginMetroinder 호출, AccessToken 발급 전");
+            String snsAccessToken = oAuth2LoginService.getSnsAccessToken(code, provider, state);
+            log.info("AccessToken 발급 후");
+            Map<String, String> userInfo = oAuth2LoginService.getUserInfo(provider, snsAccessToken);
+            log.info("user 프로필 발급 후");
+            UserAccount userAccount = oAuth2LoginService.saveUser(userInfo);
+            log.info("user 정보 저장 후");
+            String refreshToken = jwtService.createRefreshTokens(userAccount);
 
-        Map<String, String> userInfo = oAuth2LoginService.getUserInfo(provider, snsAccessToken);
-        UserAccount userAccount = oAuth2LoginService.saveUser(userInfo);
+            String accessToken = jwtService.createAccessTokens(userAccount);
 
-        String accessToken = jwtService.createAccessTokens(userAccount);
-        String refreshToken = jwtService.createRefreshTokens(userAccount);
-        oAuth2LoginService.updateRefreshToken(userAccount, refreshToken);
-        //response header 세팅
+            oAuth2LoginService.updateRefreshToken(userAccount, refreshToken);
+            //response header 세팅
+            log.info("토큰 발급 후");
+            MultiValueMap<String, String> loginResponseHeader = new LinkedMultiValueMap<>();
+            jwtService.loginResponseHeader(loginResponseHeader, accessToken, refreshToken);
 
-        MultiValueMap<String, String> loginResponseHeader = new LinkedMultiValueMap<>();
-        jwtService.loginResponseHeader(loginResponseHeader, accessToken, refreshToken);
+            // response Body 세팅
+            Map<String, String> loginResponseBody = new HashMap<>();
+            jwtService.loginResponseBody(loginResponseBody, userAccount);
 
-        // response Body 세팅
-        Map<String, String> loginResponseBody = new HashMap<>();
-        jwtService.loginResponseBody(loginResponseBody, userAccount);
+            log.info(loginResponseHeader.toString());
+            log.info(loginResponseBody.toString());
 
-        return new ResponseEntity<>(loginResponseBody, loginResponseHeader, HttpStatus.OK);
-        //return new ResponseEntity<>(HttpStatus.OK); //test 용
+            return new ResponseEntity<>(loginResponseBody, loginResponseHeader, HttpStatus.OK);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    @GetMapping("/loginMetroinder")
+    @ResponseBody
+    public ResponseEntity<Object> validationAccess(@RequestHeader(value="Authorization") String AccessToken) {
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 }

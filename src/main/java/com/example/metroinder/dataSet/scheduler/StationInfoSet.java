@@ -6,9 +6,13 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.json.simple.parser.ParseException;
 import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
 
 
 @Slf4j
@@ -18,9 +22,9 @@ import java.io.IOException;
 public class StationInfoSet {
     private final StationInformationSetService stationInformationSetService;
     private final StationScheduleRepository stationScheduleRepository;
-    //@PostConstruct
-    public void setInfo() throws IOException, ParseException, NullPointerException {
-        /*DateTimeFormatter formatt = DateTimeFormatter.ofPattern("yyyyMM");
+
+    /*public void setInfo() throws IOException, ParseException, NullPointerException {
+        DateTimeFormatter formatt = DateTimeFormatter.ofPattern("yyyyMM");
         LocalDate start = LocalDate.of(2022, 05, 10);
         LocalDate now = LocalDate.now();
         int count = 0;
@@ -42,17 +46,17 @@ public class StationInfoSet {
         stationInformationSetService.setLetLon();
         log.info("역 정보 데이터 저장완료");
 
-        stationScehduleSet();*/
+        stationScehduleSet();
 
-        //List<StationScheduleRepository.stationScheduleInfo> weekdayUpSchduleList = stationScheduleRepository.findWeekdayUp("안양");
-        //log.info("테스트 중인 값 : "+ weekdayUpSchduleList.get(0).getArrival_station());
-        //log.info("혼잡도 평균 저장 중...");
-        //stationInformationSetService.getStationDegreeOfCongestionAvg(count);
-        //log.info("혼잡도 평균 저장 완료");
+        List<StationScheduleRepository.stationScheduleInfo> weekdayUpSchduleList = stationScheduleRepository.findWeekdayUp("안양");
+        log.info("테스트 중인 값 : "+ weekdayUpSchduleList.get(0).getArrival_station());
+        log.info("혼잡도 평균 저장 중...");
+        stationInformationSetService.getStationDegreeOfCongestionAvg(count);
+        log.info("혼잡도 평균 저장 완료");
     }
 
     public void stationScehduleSet() throws IOException {
-        /*List<String> stationList = stationInformationSetService.stationDistinctList();
+        List<String> stationList = stationInformationSetService.stationDistinctList();
         log.info("평일 역 시간표 저장 중...");
         for(int i = 0; i < stationList.size(); i++) {
             String json = stationInformationSetService.getStationCode(stationList.get(i));
@@ -78,7 +82,7 @@ public class StationInfoSet {
 
     @Scheduled(fixedDelay = 1000 * 60 * 60 * 24)
     public void dataSlice() throws IOException, ParseException, NullPointerException {
-        /*LocalDate now = LocalDate.now();
+        LocalDate now = LocalDate.now();
         DateTimeFormatter day = DateTimeFormatter.ofPattern("dd");
         DateTimeFormatter monthFormatt = DateTimeFormatter.ofPattern("MM");
         if(now.format(day) != "15") {
@@ -87,7 +91,7 @@ public class StationInfoSet {
         String month = now.format(monthFormatt);
         stationInformationSetService.peopleInformationBySeoulAtTimeSave("2023" + month);
         *//* 달마다 실행 *//*
-        stationInformationSetService.getStationDegreeOfCongestionAvg();*/
-    }
+        stationInformationSetService.getStationDegreeOfCongestionAvg();
+    }*/
 
 }

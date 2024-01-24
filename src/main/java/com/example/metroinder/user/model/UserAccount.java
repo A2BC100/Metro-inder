@@ -27,7 +27,7 @@ public class UserAccount extends Timestamped {
     private UserRole role;
     @Column(length = 10)
     private String provider;    // oauth2를 이용할 경우 어떤 플랫폼을 이용하는지
-    //@Column(length = 30)
+    @Column(length = 50)
     private String providerId;  // oauth2를 이용할 경우 아이디값
     @Column(length = 300)
     private String refreshToken; // 리프레시 토큰

@@ -86,8 +86,6 @@ public class OAuth2LoginService {
                 snsAccessToken = jsonObject.get("access_token").toString();
 
                 log.info("google accessToken : " + snsAccessToken);
-
-                return snsAccessToken;
             }
             else if("naver".equals(provider)){
                 requestUrl = "https://nid.naver.com/oauth2.0/token";
@@ -105,23 +103,22 @@ public class OAuth2LoginService {
                 params.add("code", code);
                 params.add("state", state);
 
-                HttpEntity<MultiValueMap<String, String>> kakaoTokenRequest =
+                HttpEntity<MultiValueMap<String, String>> naverTokenRequest =
                         new HttpEntity<>(params, headers);
 
 
                 ResponseEntity<String> response =
-                        rt.exchange(requestUrl, HttpMethod.POST, kakaoTokenRequest, String.class);
+                        rt.exchange(requestUrl, HttpMethod.POST, naverTokenRequest, String.class);
 
                 log.info("naver responseHeader : " + response.getHeaders().toString());
 
                 String responseBody = response.getBody();
 
                 log.info("naver responseBody : " + responseBody);
-                /*StringBuilder stringBuilder = new StringBuilder();
+                StringBuilder stringBuilder = new StringBuilder();
                 JSONParser jsonParser = new JSONParser();
                 JSONObject jsonObject = (JSONObject) jsonParser.parse(responseBody);
-                snsAccessToken = jsonObject.get("access_token").toString();*/
-                return null;
+                snsAccessToken = jsonObject.get("access_token").toString();
             }
             else {
                 requestUrl = "https://kauth.kakao.com/oauth/token";
@@ -146,7 +143,7 @@ public class OAuth2LoginService {
                 ResponseEntity<String> response =
                         rt.exchange(requestUrl, HttpMethod.POST, kakaoTokenRequest, String.class);
 
-                //log.info(response.getHeaders().toString());
+                log.info(response.getHeaders().toString());
 
                 String responseBody = response.getBody();
 
@@ -154,7 +151,6 @@ public class OAuth2LoginService {
                 JSONParser jsonParser = new JSONParser();
                 JSONObject jsonObject = (JSONObject) jsonParser.parse(responseBody);
                 snsAccessToken = jsonObject.get("access_token").toString();
-                //log.info(snsAccessToken);
             }
         }catch (Exception e) {
             e.printStackTrace();
@@ -201,8 +197,38 @@ public class OAuth2LoginService {
                 userInfo.put("email", email);
             }
             else if("naver".equals(provider)){
-                requestUrl = "";
+                requestUrl = "https://openapi.naver.com/v1/nid/me";
+                RestTemplate rt = new RestTemplate();
 
+                //HttpHeader 오브젝트
+                HttpHeaders headers = new HttpHeaders();
+                headers.add("Authorization", "Bearer " + accessToken);
+                headers.add("Content-type", "application/x-www-form-urlencoded;charset=utf-8");
+
+                //http 헤더(headers)를 가진 엔티티
+                HttpEntity<MultiValueMap<String, String>> googleProfileRequest =
+                        new HttpEntity<>(headers);
+
+                //reqUrl로 Http 요청 , POST 방식
+                ResponseEntity<String> response =
+                        rt.exchange(requestUrl, HttpMethod.GET, googleProfileRequest, String.class);
+
+                String responseBody = response.getBody();
+
+                log.info("google responseBody : " + responseBody);
+
+                JSONParser jsonParser = new JSONParser();
+                JSONObject jsonObject = (JSONObject) jsonParser.parse(responseBody);
+                JSONObject naverResponse = (JSONObject) jsonObject.get("response");
+                String providerId = provider + "_" + naverResponse.get("id").toString();
+                String userName = naverResponse.get("nickname").toString();
+                String email = naverResponse.get("email").toString();
+
+                userInfo.put("provider", provider);
+                userInfo.put("providerId", providerId);
+                userInfo.put("connectedAt", null);
+                userInfo.put("userName", userName);
+                userInfo.put("email", email);
             }
             else{
                 requestUrl = "https://kapi.kakao.com/v2/user/me";
@@ -222,6 +248,8 @@ public class OAuth2LoginService {
                         rt.exchange(requestUrl, HttpMethod.POST, kakaoProfileRequest, String.class);
 
                 String responseBody = response.getBody();
+
+                log.info("KAKAO 프로필 : " + responseBody);
 
                 JSONParser jsonParser = new JSONParser();
                 JSONObject jsonObject = (JSONObject) jsonParser.parse(responseBody);
@@ -270,6 +298,7 @@ public class OAuth2LoginService {
                     .build();
 
             userAccountRepository.save(findUser);
+            log.info("save 성공");
         }
 
         return findUser;

@@ -34,7 +34,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         log.info("Request url : " + request.getRequestURI());
-
+        if("/validationAccess".equals(request.getRequestURI())) {
+            filterChain.doFilter(request, response);
+            return;
+        }
         /*String att = request.getHeader("Authorization");
         String rtt = request.getHeader("Authorization-refresh");
         if(att != null) {
