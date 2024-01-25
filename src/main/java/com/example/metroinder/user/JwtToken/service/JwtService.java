@@ -2,24 +2,25 @@ package com.example.metroinder.user.JwtToken.service;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
+import com.auth0.jwt.exceptions.TokenExpiredException;
 import com.example.metroinder.user.model.UserAccount;
+import com.example.metroinder.user.repository.UserAccountRepository;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 import org.springframework.util.MultiValueMap;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.util.Date;
 import java.util.Map;
-import java.util.Optional;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 @Getter
 public class JwtService {
+    private final UserAccountRepository userAccountRepository;
     private final String AUTHORITIES_KEY = "auth";
     private final String BEARER_TYPE = "Bearer";
 
@@ -45,7 +46,7 @@ public class JwtService {
                 .withSubject("AccessToken") // JWT의 Subject 지정
                 .withExpiresAt(new Date(now.getTime() + ACCESS_TOKEN_EXPIRE_TIME)) // 토큰 만료 시간 설정
                 .withClaim("iss", "metroinder.co.kr")
-                .withClaim("aud", user.getUsername())
+                .withClaim("aud", user.getEmail())
                 .withClaim("iat",new Date(now.getTime()))
                 .withClaim("provider", user.getProvider())
                 .sign(Algorithm.HMAC512(secretKey)); // HMAC512 알고리즘 사용
@@ -58,90 +59,89 @@ public class JwtService {
                 .withSubject("RefreshToken")
                 .withExpiresAt(new Date(now.getTime() + REFRESH_TOKEN_EXPIRE_TIME))
                 .withClaim("iss", "metroinder.co.kr")
-                .withClaim("aud", user.getUsername())
-                .withClaim("iat",new Date(now.getTime()))
+                .withClaim("aud", user.getEmail())
+                .withClaim("iat", new Date(now.getTime()))
                 .withClaim("provider", user.getProvider())
                 .sign(Algorithm.HMAC512(secretKey));
     }
 
-
-    // AccessToken 헤더에 실어서 보내기
-    public void sendAccessToken(HttpServletResponse response, String accessToken) {
-        response.setStatus(HttpServletResponse.SC_OK);
-        //response.setHeader("UserName", );
-        response.setHeader(accessHeader, accessToken);
-        log.info("재발급된 Access Token : {}", accessToken);
+    public void loginResponseHeader(MultiValueMap<String, String> responseHeader, String accessToken, String refreshToken) {
+        responseHeader.add("Content-type", "application/json;charset=utf-8");
+        responseHeader.add(accessHeader, accessToken);
+        responseHeader.add(refreshHeader, refreshToken);
+    }
+    public void loginResponseBody(Map<String, String> responseBody, UserAccount user) {
+        responseBody.put("UserName", user.getUsername());
+        responseBody.put("email", user.getEmail());
     }
 
-
-    public void sendAccessAndRefreshToken(HttpServletResponse response, UserAccount user, String accessToken, String refreshToken) {
-        response.setStatus(HttpServletResponse.SC_OK);
-        response.setHeader("UserName", user.getUsername());
-        response.setHeader("email", user.getEmail());
-        response.setHeader(accessHeader, accessToken);
-        response.setHeader(refreshHeader, refreshToken);
-    }
-
-    // 헤더에서 RefreshToken 추출
-    public Optional<String> extractRefreshToken(HttpServletRequest request) {
-        /*String refreshToken = request.getHeader(refreshHeader);
-        if(refreshToken != null) {
-            if(refreshToken.startsWith("Bearer")) {
-                refreshToken.replace("Bearer", "");
-            }
+    public boolean tokenValitaion(String tokenGbn, HttpHeaders headers, Map<String, String> responseBody) {
+        String token;
+        if ("a".equals(tokenGbn)) {
+            token = headers.getFirst(accessHeader);
+        } else {
+            token = headers.getFirst(refreshHeader);
         }
-        return refreshToken;*/
-        return Optional.ofNullable(request.getHeader(refreshHeader))
-                .filter(refreshToken -> refreshToken.startsWith("Bearer"))
-                .map(refreshToken -> refreshToken.replace("Bearer ", ""));
-    }
 
-    // 헤더에서 AccessToken 추출
-    public Optional<String> extractAccessToken(HttpServletRequest request) {
-        /*String accessToken = request.getHeader(accessHeader);
-        if(accessToken != null) {
-            if(accessToken.startsWith("Bearer")) {
-                accessToken.replace("Bearer", "");
-            }
-        }
-        return accessToken;*/
-        return Optional.ofNullable(request.getHeader(accessHeader))
-                .filter(refreshToken -> refreshToken.startsWith("Bearer"))
-                .map(refreshToken -> refreshToken.replace("Bearer ", ""));
-    }
-
-    // AcessToken에서 유저정보 추출
-    public Optional<String> extractUser(String accessToken) {
-        try {
-            // 토큰 유효성 검사하는 데에 사용할 알고리즘이 있는 JWT verifier builder 반환
-            return Optional.ofNullable(JWT.require(Algorithm.HMAC512(secretKey))
-                    .build() // 반환된 빌더로 JWT verifier 생성
-                    .verify(accessToken) // accessToken을 검증하고 유효하지 않다면 예외 발생
-                    .getClaim("aud") // 유저정보 가져오기
-                    .asString());
-        } catch (Exception e) {
-            log.error("액세스 토큰이 유효하지 않습니다.");
-            return Optional.empty();
-        }
-    }
-
-    public boolean isTokenValid(String token) {
-        try {
-            JWT.require(Algorithm.HMAC512(secretKey)).build().verify(token);
+        if (token == null) {
+            responseBody.put("validationResult", "mtv_rc_1");
             return true;
-        } catch (Exception e) {
-            log.error("유효하지 않은 토큰입니다. {}", e.getMessage());
+        }
+
+        if(token.startsWith("Bearer")) {
+            token = token.replace("Bearer", "");
+        } else {
+            responseBody.put("validationResult", "mtv_rc_2");
+            return true; // Access 토큰에 Bearer 없음
+        }
+        try {
+            String iss = JWT.require(Algorithm.HMAC512(secretKey)).build().verify(token)
+                    .getClaim("iss").asString();
+            if(iss == null || "metroinder.co.kr".equals(iss)) {
+                responseBody.put("validationResult", "mtv_rc_2");
+                return true; // 토큰 발급처 정보가 없거나, Metroinder 서비스에서 발급한 토큰이 아님
+            }
+            String aud = JWT.require(Algorithm.HMAC512(secretKey)).build().verify(token)
+                    .getClaim("aud").asString();
+            String provider = JWT.require(Algorithm.HMAC512(secretKey)).build().verify(token)
+                    .getClaim("provider").asString();
+            if(aud == null || provider == null) {
+                responseBody.put("validationResult", "mtv_rc_2");
+                return true; // 토큰에 사용자 정보나 소셜 로그인 구분 정보가 없음
+            }
+            UserAccount userInfo = userAccountRepository.findByProviderAndEmail(provider, aud);
+            if(userInfo == null) {
+                responseBody.put("validationResult", "mtv_rc_2");
+                return true; // 토큰에 일치하는 사용자 정보가 없음
+            }
             return false;
+        } catch (TokenExpiredException e) {
+            responseBody.put("validationResult", "mtv_rc_3");
+            log.info("토큰 만료");
+            return true; //
+        } catch (Exception e) {
+            responseBody.put("validationResult", "mtv_rc_1");
+            log.error(e.getMessage());
+            return true; // 예상치 못한 에러
         }
     }
 
-    public void loginResponseHeader(MultiValueMap<String, String> headers, String accessToken, String refreshToken) {
-        headers.add("Content-type", "application/json;charset=utf-8");
-        headers.add(accessHeader, accessToken);
-        headers.add(refreshHeader, refreshToken);
-    }
-    public void loginResponseBody(Map<String, String> map, UserAccount user) {
-        map.put("UserName", user.getUsername());
-        map.put("email", user.getEmail());
+    public void updateAccessToken(HttpHeaders headers, MultiValueMap<String, String> responseHeader) {
+        String refreshToken = headers.getFirst(refreshHeader);
+        if(refreshToken == null) {
+            return; // warning 때문에 추가
+        }
+        try {
+            String aud = JWT.require(Algorithm.HMAC512(secretKey)).build().verify(refreshToken)
+                    .getClaim("aud").asString();
+            String provider = JWT.require(Algorithm.HMAC512(secretKey)).build().verify(refreshToken)
+                    .getClaim("provider").asString();
+            UserAccount userInfo = userAccountRepository.findByProviderAndEmail(provider, aud);
+            String accessToken = createAccessTokens(userInfo);
+            responseHeader.add(accessHeader, accessToken);
+            responseHeader.add(refreshHeader, refreshToken);
+        }catch (Exception e) {
+            log.error(e.getMessage());
+        }
     }
 }

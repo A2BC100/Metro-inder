@@ -1,23 +1,17 @@
 package com.example.metroinder.config;
 
-import com.example.metroinder.user.JwtToken.service.JwtService;
-import com.example.metroinder.user.JwtToken.filter.JwtAuthenticationFilter;
-import com.example.metroinder.user.repository.UserAccountRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
-    private final JwtService jwtService;
-    private final UserAccountRepository userAccountRepository;
+
     @Override
     protected void configure(HttpSecurity http) throws Exception {
 
@@ -37,16 +31,4 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         //http.addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class); // JWT 인증을 위하여 직접 구현한 필터를 UsernamePasswordAuthenticationFilter 전에 실행
 
     }
-
-    @Bean
-    public BCryptPasswordEncoder encodePassword() {
-        return new BCryptPasswordEncoder();
-    }
-
-    @Bean
-    public JwtAuthenticationFilter jwtAuthenticationFilter() {
-        JwtAuthenticationFilter jwtAuthenticationFilter = new JwtAuthenticationFilter(jwtService, userAccountRepository);
-        return jwtAuthenticationFilter;
-    }
-
 }
