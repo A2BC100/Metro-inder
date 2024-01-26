@@ -33,7 +33,6 @@ import java.util.regex.Pattern;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-@Component
 public class StationInformationSetService {
 
     @Value("${generalKey}")
@@ -46,32 +45,37 @@ public class StationInformationSetService {
     private final StationLineRepository stationLineRepository;
     private final TimeStationPersonnelRepository timeStationPersonnelRepository;
     private final StationScheduleRepository stationScheduleRepository;
+    private String defaultEncodeing = "UTF-8";
+    
+    // 서울시 지하철호선별 역별 승하차 인원 정보 API 호출 및 저장
+    public String getLastRegistrationDate() {
+        return timeStationPersonnelRepository.lastRegistrationDate();
+    }
 
-    // 서울시 지하철 호선별 역별 시간대별 승하차 인원 정보 API 호출 및 저장
     public void peopleInformationBySeoulAtTimeSave(String dataScope)  throws IOException {
         try {
             StringBuilder urlBuilder = new StringBuilder("http://openapi.seoul.go.kr:8088");
-            urlBuilder.append("/" + URLEncoder.encode(generalKey, "UTF-8"));
-            urlBuilder.append("/" + URLEncoder.encode("json", "UTF-8"));
-            urlBuilder.append("/" + URLEncoder.encode("CardSubwayTime", "UTF-8"));
-            urlBuilder.append("/" + URLEncoder.encode("1", "UTF-8"));
-            urlBuilder.append("/" + URLEncoder.encode("999", "UTF-8"));
+            urlBuilder.append("/" + URLEncoder.encode(generalKey, defaultEncodeing));
+            urlBuilder.append("/" + URLEncoder.encode("json", defaultEncodeing));
+            urlBuilder.append("/" + URLEncoder.encode("CardSubwayTime", defaultEncodeing));
+            urlBuilder.append("/" + URLEncoder.encode("1", defaultEncodeing));
+            urlBuilder.append("/" + URLEncoder.encode("999", defaultEncodeing));
 
             /* 서비스별 추가 요청인자*/
-            urlBuilder.append("/" + URLEncoder.encode(dataScope, "UTF-8"));//월별, 현재 최신 2022년 10월까지
+            urlBuilder.append("/" + URLEncoder.encode(dataScope, defaultEncodeing));//월별, 현재 최신 2022년 10월까지
 
             URL url = new URL(urlBuilder.toString());
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.setRequestMethod("GET");
             conn.setRequestProperty("Content-type", "application/json");
-            //System.out.println("Response code: " + conn.getResponseCode()); /* 연결에 대한 확인*/
+            log.info("역, 시간대 별 승하차 인원 API Response code: " + conn.getResponseCode()); /* 연결에 대한 확인*/
             BufferedReader rd;
 
             // 서비스코드가 정상이면 200~300사이의 숫자
             if (conn.getResponseCode() >= 200 && conn.getResponseCode() <= 300) {
-                rd = new BufferedReader(new InputStreamReader(conn.getInputStream(), "UTF-8"));
+                rd = new BufferedReader(new InputStreamReader(conn.getInputStream(), defaultEncodeing));
             } else {
-                rd = new BufferedReader(new InputStreamReader(conn.getErrorStream(), "UTF-8"));
+                rd = new BufferedReader(new InputStreamReader(conn.getErrorStream(), defaultEncodeing));
             }
             StringBuilder stringBuilder = new StringBuilder();
             String line;
@@ -81,35 +85,16 @@ public class StationInformationSetService {
             JSONParser jsonParser = new JSONParser();
             JSONObject jsonObject = (JSONObject) jsonParser.parse(stringBuilder.toString());
             JSONObject cardSubwayTime = (JSONObject) jsonObject.get("CardSubwayTime");
-            /* 1000건이 넘는 월 데이터가 있었으나 데이터가 수정됬는지 없어짐. 불필요한 코드 */
-            /*Long total = ((Long) cardSubwayTime.get("list_total_count"));
-            if(total.intValue() > 999) {
-                urlBuilder = new StringBuilder("http://openapi.seoul.go.kr:8088");
-                urlBuilder.append("/" + URLEncoder.encode(generalKey, "UTF-8"));
-                urlBuilder.append("/" + URLEncoder.encode("json", "UTF-8"));
-                urlBuilder.append("/" + URLEncoder.encode("CardSubwayTime", "UTF-8"));
-                urlBuilder.append("/" + URLEncoder.encode("1000", "UTF-8"));
-                urlBuilder.append("/" + URLEncoder.encode("1999", "UTF-8"));
-                urlBuilder.append("/" + URLEncoder.encode(dataScope, "UTF-8"));
-                url = new URL(urlBuilder.toString());
-                conn = (HttpURLConnection) url.openConnection();
-                conn.setRequestMethod("GET");
-                conn.setRequestProperty("Content-type", "application/json");
-                //System.out.println("Response code: " + conn.getResponseCode());
-
-                if (conn.getResponseCode() >= 200 && conn.getResponseCode() <= 300) {
-                    rd = new BufferedReader(new InputStreamReader(conn.getInputStream(), "UTF-8"));
-                } else {
-                    rd = new BufferedReader(new InputStreamReader(conn.getErrorStream(), "UTF-8"));
-                }
-                while ((line = rd.readLine()) != null) {
-                    stringBuilder.append(line);
-                }
-                jsonObject = (JSONObject) jsonParser.parse(stringBuilder.toString());
-                cardSubwayTime = (JSONObject) jsonObject.get("CardSubwayTime");
-            }*/
             rd.close();
             conn.disconnect();
+
+            int totalCount = Integer.parseInt(cardSubwayTime.get("ist_total_count").toString());
+            if(totalCount > 999) {
+                log.info(dataScope + " 데이터는 1000개 이상입니다.");
+            }
+
+            /*
+
             JSONArray jsonArr = (JSONArray) cardSubwayTime.get("row");
             List<TimeStationPersonnelDto> jsonSameStationDtoList = new ArrayList<>();
             for (int count = 0; count < jsonArr.size(); count++) {
@@ -222,7 +207,7 @@ public class StationInformationSetService {
                         break;
                 }
 
-                if(station.equals("서울역")) {
+                if(-1 == station.indexOf("역")) {
                     station = "서울";
                 }
                 TimeStationPersonnelDto timeStationPersonnelDto = TimeStationPersonnelDto.builder()
@@ -311,7 +296,7 @@ public class StationInformationSetService {
             List<TimeStationPersonnel> jsonSameStationList = timeStationPersonnelDto.toEntityList(jsonSameStationDtoList);
             for (TimeStationPersonnel timeStationPersonnel : jsonSameStationList) {
                 timeStationPersonnelRepository.save(timeStationPersonnel);
-            }
+            }*/
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -321,7 +306,7 @@ public class StationInformationSetService {
         try {
             JSONParser jsonParser = new JSONParser();
             ClassPathResource resource = new ClassPathResource("static/json/lines.json");
-            JSONArray jsonArray = (JSONArray) jsonParser.parse(new InputStreamReader(resource.getInputStream(), "UTF-8"));
+            JSONArray jsonArray = (JSONArray) jsonParser.parse(new InputStreamReader(resource.getInputStream(), defaultEncodeing));
             String stnLine = "";
             int routeOrder = 1;
 
@@ -389,7 +374,7 @@ public class StationInformationSetService {
         try {
             JSONParser jsonParser = new JSONParser();
             ClassPathResource resource = new ClassPathResource("static/json/station_coordinate.json");
-            JSONArray jsonArray = (JSONArray) jsonParser.parse(new InputStreamReader(resource.getInputStream(), "UTF-8"));
+            JSONArray jsonArray = (JSONArray) jsonParser.parse(new InputStreamReader(resource.getInputStream(), defaultEncodeing));
             //log.info(""+ jsonArray);
             for (int count = 0; count < jsonArray.size(); count++) {
                 JSONObject row = (JSONObject) jsonArray.get(count);
@@ -457,18 +442,18 @@ public class StationInformationSetService {
     /* 입력한 역이름으로 역코드목록을 json으로 받아옴 */
     public String getStationCode(String station) throws IOException {
         StringBuilder urlBuilder = new StringBuilder("http://openAPI.seoul.go.kr:8088");
-        urlBuilder.append("/" + URLEncoder.encode(generalKey, "UTF-8"));
-        urlBuilder.append("/" + URLEncoder.encode("json", "UTF-8"));
-        urlBuilder.append("/" + URLEncoder.encode("SearchInfoBySubwayNameService", "UTF-8"));
-        urlBuilder.append("/" + URLEncoder.encode("1", "UTF-8"));
-        urlBuilder.append("/" + URLEncoder.encode("999", "UTF-8"));
+        urlBuilder.append("/" + URLEncoder.encode(generalKey, defaultEncodeing));
+        urlBuilder.append("/" + URLEncoder.encode("json", defaultEncodeing));
+        urlBuilder.append("/" + URLEncoder.encode("SearchInfoBySubwayNameService", defaultEncodeing));
+        urlBuilder.append("/" + URLEncoder.encode("1", defaultEncodeing));
+        urlBuilder.append("/" + URLEncoder.encode("999", defaultEncodeing));
 
         /* 서비스별 추가 요청인자*/
         /* 전철역이름 */
         if(station.equals("서울")) {
             station = "서울역";
         }
-        urlBuilder.append("/" + URLEncoder.encode(station, "UTF-8"));
+        urlBuilder.append("/" + URLEncoder.encode(station, defaultEncodeing));
 
         URL url = new URL(urlBuilder.toString());
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
@@ -479,9 +464,9 @@ public class StationInformationSetService {
 
         // 서비스코드가 정상이면 200~300사이의 숫자
         if (conn.getResponseCode() >= 200 && conn.getResponseCode() <= 300) {
-            rd = new BufferedReader(new InputStreamReader(conn.getInputStream(), "UTF-8"));
+            rd = new BufferedReader(new InputStreamReader(conn.getInputStream(), defaultEncodeing));
         } else {
-            rd = new BufferedReader(new InputStreamReader(conn.getErrorStream(), "UTF-8"));
+            rd = new BufferedReader(new InputStreamReader(conn.getErrorStream(), defaultEncodeing));
         }
         StringBuilder stringBuilder = new StringBuilder();
         String line;
@@ -495,19 +480,19 @@ public class StationInformationSetService {
 
     public String getStationSchduleAPI(String stationCode, String week, String inout) throws IOException {
         StringBuilder urlBuilder = new StringBuilder("http://openAPI.seoul.go.kr:8088");
-        urlBuilder.append("/" + URLEncoder.encode(generalKey, "UTF-8"));
-        urlBuilder.append("/" + URLEncoder.encode("json", "UTF-8"));
-        urlBuilder.append("/" + URLEncoder.encode("SearchSTNTimeTableByIDService", "UTF-8"));
-        urlBuilder.append("/" + URLEncoder.encode("1", "UTF-8"));
-        urlBuilder.append("/" + URLEncoder.encode("999", "UTF-8"));
+        urlBuilder.append("/" + URLEncoder.encode(generalKey, defaultEncodeing));
+        urlBuilder.append("/" + URLEncoder.encode("json", defaultEncodeing));
+        urlBuilder.append("/" + URLEncoder.encode("SearchSTNTimeTableByIDService", defaultEncodeing));
+        urlBuilder.append("/" + URLEncoder.encode("1", defaultEncodeing));
+        urlBuilder.append("/" + URLEncoder.encode("999", defaultEncodeing));
 
         /* 서비스별 추가 요청인자*/
         /* 전철역코드 */
-        urlBuilder.append("/" + URLEncoder.encode(stationCode, "UTF-8"));
+        urlBuilder.append("/" + URLEncoder.encode(stationCode, defaultEncodeing));
         /* 요일 */
-        urlBuilder.append("/" + URLEncoder.encode(week, "UTF-8"));
+        urlBuilder.append("/" + URLEncoder.encode(week, defaultEncodeing));
         /* 상/하행선 */
-        urlBuilder.append("/" + URLEncoder.encode(inout, "UTF-8"));
+        urlBuilder.append("/" + URLEncoder.encode(inout, defaultEncodeing));
 
         URL url = new URL(urlBuilder.toString());
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
@@ -518,9 +503,9 @@ public class StationInformationSetService {
 
         // 서비스코드가 정상이면 200~300사이의 숫자
         if (conn.getResponseCode() >= 200 && conn.getResponseCode() <= 300) {
-            rd = new BufferedReader(new InputStreamReader(conn.getInputStream(), "UTF-8"));
+            rd = new BufferedReader(new InputStreamReader(conn.getInputStream(), defaultEncodeing));
         } else {
-            rd = new BufferedReader(new InputStreamReader(conn.getErrorStream(), "UTF-8"));
+            rd = new BufferedReader(new InputStreamReader(conn.getErrorStream(), defaultEncodeing));
         }
         StringBuilder stringBuilder = new StringBuilder();
         String line;
@@ -687,15 +672,14 @@ public class StationInformationSetService {
 
     //혼잡도데이터가 담겨있는 Entity에서 겹치지 않는(distinct) 역이름을 list에 담아오기 위한 메소드
     public List<String> stationDistinctList() {
-        List<String> stationList = capitalareaStationRepository.findDistinctStation();
-        return stationList;
+        return capitalareaStationRepository.findDistinctStation();
     }
 
     // 괄호 제거
     public String deleteBracket(String text) {
         Matcher matcher = PATTERN_BRACKET.matcher(text);
         String pureText = text;
-        String removeTextArea = new String();
+        String removeTextArea;
         while(matcher.find()) {
             int startIndex = matcher.start();
             int endIndex = matcher.end();

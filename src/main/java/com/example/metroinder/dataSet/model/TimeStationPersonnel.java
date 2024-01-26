@@ -20,7 +20,6 @@ public class TimeStationPersonnel extends Timestamped {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long congestionId;
-
     private String station;
     private String line;
     @ColumnDefault("0")

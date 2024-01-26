@@ -17,7 +17,7 @@ public class StationFinderController {
     private final StationFinderService stationFinderService;
     private final StationLineRepository stationLineRepository;
 
-    @GetMapping("/test")
+    @GetMapping("/teststationfinder")
     //@ResponseBody
     //ResponseEntity
     public void testGetDirections() throws NullPointerException {

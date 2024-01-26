@@ -34,7 +34,6 @@ public class UserAccountController {
     @ResponseBody
     public ResponseEntity<Object> loginMetroinder(@RequestParam("code") String code, @RequestParam(value = "provider", required = false) String provider, @RequestParam(value = "state", required = false) String state) {
         try {
-            //provider = "KAKAO";
             provider = provider.toLowerCase();
             log.info("code : " + code);
             String snsAccessToken = oAuth2LoginService.getSnsAccessToken(code, provider, state);
@@ -79,6 +78,7 @@ public class UserAccountController {
                 return new ResponseEntity<>(responseBody, responseHeader, HttpStatus.BAD_REQUEST);
             }
         }
+        log.info("response 성공 직전");
         log.info(responseHeader.toString());
         log.info(responseBody.toString());
         return new ResponseEntity<>(responseBody, responseHeader, HttpStatus.OK);
@@ -99,6 +99,7 @@ public class UserAccountController {
             }
         }
         jwtService.updateAccessToken(token, responseHeader);
+        log.info("response 성공 직전");
         log.info(responseHeader.toString());
         log.info(responseBody.toString());
         return new ResponseEntity<>(responseBody, responseHeader, HttpStatus.OK);

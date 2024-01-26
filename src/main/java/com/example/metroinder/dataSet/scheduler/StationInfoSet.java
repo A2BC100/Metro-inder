@@ -21,15 +21,21 @@ import java.util.List;
 @EnableScheduling
 public class StationInfoSet {
     private final StationInformationSetService stationInformationSetService;
-    private final StationScheduleRepository stationScheduleRepository;
+
 
     /*public void setInfo() throws IOException, ParseException, NullPointerException {
+
+
         DateTimeFormatter formatt = DateTimeFormatter.ofPattern("yyyyMM");
         LocalDate start = LocalDate.of(2022, 05, 10);
         LocalDate now = LocalDate.now();
+        if(start.getYear() == now.getYear() && start.getMonth() == now.getMonth()) {
+            return;
+        }
+
         int count = 0;
         boolean flag = true;
-        log.info("혼잡도 데이터 저장 중...");
+
         while (flag) {
             count++;
             log.info(start.format(formatt)+" 혼잡도 데이터 저장 중...");
@@ -48,8 +54,6 @@ public class StationInfoSet {
 
         stationScehduleSet();
 
-        List<StationScheduleRepository.stationScheduleInfo> weekdayUpSchduleList = stationScheduleRepository.findWeekdayUp("안양");
-        log.info("테스트 중인 값 : "+ weekdayUpSchduleList.get(0).getArrival_station());
         log.info("혼잡도 평균 저장 중...");
         stationInformationSetService.getStationDegreeOfCongestionAvg(count);
         log.info("혼잡도 평균 저장 완료");
@@ -93,5 +97,4 @@ public class StationInfoSet {
         *//* 달마다 실행 *//*
         stationInformationSetService.getStationDegreeOfCongestionAvg();
     }*/
-
 }
