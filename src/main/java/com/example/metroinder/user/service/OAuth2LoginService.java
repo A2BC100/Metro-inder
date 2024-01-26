@@ -76,16 +76,13 @@ public class OAuth2LoginService {
                 ResponseEntity<String> response =
                         rt.exchange(requestUrl, HttpMethod.POST, googleTokenRequest, String.class);
 
-                //log.info("google responseHeader : " + response.getHeaders().toString());
                 String responseBody = response.getBody();
-                //log.info("google responseBody : " + responseBody);
 
                 StringBuilder stringBuilder = new StringBuilder();
                 JSONParser jsonParser = new JSONParser();
                 JSONObject jsonObject = (JSONObject) jsonParser.parse(responseBody);
                 snsAccessToken = jsonObject.get("access_token").toString();
 
-                log.info("google accessToken : " + snsAccessToken);
             }
             else if("naver".equals(provider)){
                 requestUrl = "https://nid.naver.com/oauth2.0/token";
@@ -110,11 +107,9 @@ public class OAuth2LoginService {
                 ResponseEntity<String> response =
                         rt.exchange(requestUrl, HttpMethod.POST, naverTokenRequest, String.class);
 
-                log.info("naver responseHeader : " + response.getHeaders().toString());
 
                 String responseBody = response.getBody();
 
-                log.info("naver responseBody : " + responseBody);
                 StringBuilder stringBuilder = new StringBuilder();
                 JSONParser jsonParser = new JSONParser();
                 JSONObject jsonObject = (JSONObject) jsonParser.parse(responseBody);
@@ -142,8 +137,6 @@ public class OAuth2LoginService {
 
                 ResponseEntity<String> response =
                         rt.exchange(requestUrl, HttpMethod.POST, kakaoTokenRequest, String.class);
-
-                log.info(response.getHeaders().toString());
 
                 String responseBody = response.getBody();
 
@@ -182,8 +175,6 @@ public class OAuth2LoginService {
 
                 String responseBody = response.getBody();
 
-                log.info("google responseBody : " + responseBody);
-
                 JSONParser jsonParser = new JSONParser();
                 JSONObject jsonObject = (JSONObject) jsonParser.parse(responseBody);
                 String providerId = provider + "_" + jsonObject.get("id").toString();
@@ -214,8 +205,6 @@ public class OAuth2LoginService {
                         rt.exchange(requestUrl, HttpMethod.GET, googleProfileRequest, String.class);
 
                 String responseBody = response.getBody();
-
-                log.info("google responseBody : " + responseBody);
 
                 JSONParser jsonParser = new JSONParser();
                 JSONObject jsonObject = (JSONObject) jsonParser.parse(responseBody);
@@ -248,8 +237,6 @@ public class OAuth2LoginService {
                         rt.exchange(requestUrl, HttpMethod.POST, kakaoProfileRequest, String.class);
 
                 String responseBody = response.getBody();
-
-                log.info("KAKAO 프로필 : " + responseBody);
 
                 JSONParser jsonParser = new JSONParser();
                 JSONObject jsonObject = (JSONObject) jsonParser.parse(responseBody);
@@ -290,7 +277,6 @@ public class OAuth2LoginService {
         UserAccount findUser = userAccountRepository.findByProviderAndEmail(provider, email);
 
         if(findUser == null) {
-
             findUser = UserAccount.builder()
                     .username(userName).email(email).role(role)
                     .provider(provider).providerId(providerId)
@@ -298,7 +284,6 @@ public class OAuth2LoginService {
                     .build();
 
             userAccountRepository.save(findUser);
-            log.info("save 성공");
         }
 
         return findUser;

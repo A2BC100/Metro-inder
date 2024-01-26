@@ -27,10 +27,5 @@ public class MainController {
         return "index";
     }
 
-    @GetMapping("/tokenRequestTest")
-    public String tokenRequestTest() {
-        return "tokenTest";
-    }
-
 }
 

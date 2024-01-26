@@ -75,30 +75,27 @@ public class JwtService {
         responseBody.put("email", user.getEmail());
     }
 
-    public boolean tokenValitaion(String tokenGbn, HttpHeaders headers, Map<String, String> responseBody) {
-        String token;
-        if ("a".equals(tokenGbn)) {
-            token = headers.getFirst(accessHeader);
-        } else {
-            token = headers.getFirst(refreshHeader);
-        }
-
+    public boolean tokenValitaion(String tokenGbn, String token, Map<String, String> responseBody) {
         if (token == null) {
             responseBody.put("validationResult", "mtv_rc_1");
+            log.info("token이 존재하지 않음");
             return true;
         }
 
         if(token.startsWith("Bearer")) {
-            token = token.replace("Bearer", "");
+            token = token.replace("Bearer ", "");
         } else {
             responseBody.put("validationResult", "mtv_rc_2");
-            return true; // Access 토큰에 Bearer 없음
+            log.info("토큰 요청 시 토큰 타입이 존재하지 않음");
+            return true; // 토큰에 Bearer 없음
         }
         try {
+            log.info("token : " + token);
             String iss = JWT.require(Algorithm.HMAC512(secretKey)).build().verify(token)
                     .getClaim("iss").asString();
-            if(iss == null || "metroinder.co.kr".equals(iss)) {
+            if(iss == null || !"metroinder.co.kr".equals(iss)) {
                 responseBody.put("validationResult", "mtv_rc_2");
+                log.info("토큰에 발급처 정보가 일치하지 않음");
                 return true; // 토큰 발급처 정보가 없거나, Metroinder 서비스에서 발급한 토큰이 아님
             }
             String aud = JWT.require(Algorithm.HMAC512(secretKey)).build().verify(token)
@@ -107,13 +104,17 @@ public class JwtService {
                     .getClaim("provider").asString();
             if(aud == null || provider == null) {
                 responseBody.put("validationResult", "mtv_rc_2");
+                log.info("토큰에 사용자 정보나 소셜 로그인 구분 정보가 존재하지 않음");
                 return true; // 토큰에 사용자 정보나 소셜 로그인 구분 정보가 없음
             }
             UserAccount userInfo = userAccountRepository.findByProviderAndEmail(provider, aud);
             if(userInfo == null) {
                 responseBody.put("validationResult", "mtv_rc_2");
+                log.info("토큰에 유저정보와과 일치하는 유저정보 없음");
                 return true; // 토큰에 일치하는 사용자 정보가 없음
             }
+            responseBody.put(accessHeader, token);
+            responseBody.put(refreshHeader, userInfo.getRefreshToken());
             return false;
         } catch (TokenExpiredException e) {
             responseBody.put("validationResult", "mtv_rc_3");
@@ -126,12 +127,17 @@ public class JwtService {
         }
     }
 
-    public void updateAccessToken(HttpHeaders headers, MultiValueMap<String, String> responseHeader) {
-        String refreshToken = headers.getFirst(refreshHeader);
+    public void updateAccessToken(String refreshToken, MultiValueMap<String, String> responseHeader) {
         if(refreshToken == null) {
             return; // warning 때문에 추가
         }
         try {
+            if(refreshToken.startsWith("Bearer")) {
+                refreshToken = refreshToken.replace("Bearer ", "");
+            } else {
+                log.info("토큰 요청 시 토큰 타입이 존재하지 않음");
+                return; // refresh 토큰에 Bearer 없음
+            }
             String aud = JWT.require(Algorithm.HMAC512(secretKey)).build().verify(refreshToken)
                     .getClaim("aud").asString();
             String provider = JWT.require(Algorithm.HMAC512(secretKey)).build().verify(refreshToken)

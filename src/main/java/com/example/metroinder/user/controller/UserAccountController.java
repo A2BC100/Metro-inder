@@ -1,5 +1,8 @@
 package com.example.metroinder.user.controller;
 
+import com.auth0.jwt.JWT;
+import com.auth0.jwt.algorithms.Algorithm;
+import com.auth0.jwt.exceptions.TokenExpiredException;
 import com.example.metroinder.user.JwtToken.service.JwtService;
 import com.example.metroinder.user.model.UserAccount;
 import com.example.metroinder.user.service.OAuth2LoginService;
@@ -33,6 +36,7 @@ public class UserAccountController {
         try {
             //provider = "KAKAO";
             provider = provider.toLowerCase();
+            log.info("code : " + code);
             String snsAccessToken = oAuth2LoginService.getSnsAccessToken(code, provider, state);
             Map<String, String> userInfo = oAuth2LoginService.getUserInfo(provider, snsAccessToken);
 
@@ -63,39 +67,74 @@ public class UserAccountController {
 
     @GetMapping("/validationAccess")
     @ResponseBody
-    public ResponseEntity<Object> validationAccess(@RequestHeader HttpHeaders header) {
+    public ResponseEntity<Object> validationAccess(@RequestHeader(value = "Authorization") String token) {
         log.info("validationAccess 호출됨");
-        log.info(header.toString());
 
         MultiValueMap<String, String> responseHeader = new LinkedMultiValueMap<>();
         responseHeader.add("Content-type", "application/json;charset=utf-8");
 
         Map<String, String> responseBody = new HashMap<>();
-        if(jwtService.tokenValitaion("a", header, responseBody)) {
+        if(jwtService.tokenValitaion("a", token, responseBody)) {
             if("mtv_rc_1".equals(responseBody.get("validationResult"))) {
                 return new ResponseEntity<>(responseBody, responseHeader, HttpStatus.BAD_REQUEST);
             }
         }
+        log.info(responseHeader.toString());
+        log.info(responseBody.toString());
         return new ResponseEntity<>(responseBody, responseHeader, HttpStatus.OK);
     }
 
     @GetMapping("/validationRefresh")
     @ResponseBody
-    public ResponseEntity<Object> validationRefresh(@RequestHeader HttpHeaders headers) {
+    public ResponseEntity<Object> validationRefresh(@RequestHeader(value = "Authorization-refresh") String token ) {
         log.info("validationAccess 호출됨");
-        log.info(headers.toString());
 
         MultiValueMap<String, String> responseHeader = new LinkedMultiValueMap<>();
         responseHeader.add("Content-type", "application/json;charset=utf-8");
 
         Map<String, String> responseBody = new HashMap<>();
-        if(jwtService.tokenValitaion("r", headers, responseBody)) {
+        if(jwtService.tokenValitaion("r", token, responseBody)) {
             if("mtv_rc_1".equals(responseBody.get("validationResult"))) {
                 return new ResponseEntity<>(responseBody, responseHeader, HttpStatus.BAD_REQUEST);
             }
         }
-
-        jwtService.updateAccessToken(headers, responseHeader);
+        jwtService.updateAccessToken(token, responseHeader);
+        log.info(responseHeader.toString());
+        log.info(responseBody.toString());
         return new ResponseEntity<>(responseBody, responseHeader, HttpStatus.OK);
     }
+
+    /*@GetMapping("/tokenTest")
+    @ResponseBody
+    public ResponseEntity<Object> tokenTest() {
+        log.info("tokenTest 호출됨");
+        String token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJBY2Nlc3NUb2tlbiIsImF1ZCI6ImNtczg5MzgxMUBuYXZlci5jb20iLCJwcm92aWRlciI6Imtha2FvIiwiaXNzIjoibWV0cm9pbmRlci5jby5rciIsImV4cCI6MTcwNjIzNDQ1MSwiaWF0IjoxNzA2MjMyNjUxfQ.yQNnIA1W4iBRg7wRCL2TRRY5GC3PV0L0Y_FUUQrPMBozC7se5ZfD4uDZhFA0nFpsp5-dqIPaLqD7x2HQPaFQBQ";
+        String secretKey = "c3ByaW5nLWJvb3Qtc2VjdXJpdHktand0LXR1dG9yaWFsLWppd29vbi1zcHJpbmctYm9vdC1zZWN1cml0eS1qd3QtdHV0b3JpYWwK";
+        try {
+            String iss = JWT.require(Algorithm.HMAC512(secretKey)).build().verify(token)
+                    .getClaim("iss").asString();
+            if(iss == null || !"metroinder.co.kr".equals(iss)) {
+                log.info("토큰에 발급처 정보가 일치하지 않음");
+            } else {
+                log.info("iss : " + iss);
+            }
+            String aud = JWT.require(Algorithm.HMAC512(secretKey)).build().verify(token)
+                    .getClaim("aud").asString();
+            String provider = JWT.require(Algorithm.HMAC512(secretKey)).build().verify(token)
+                    .getClaim("provider").asString();
+            if(aud == null || provider == null) {
+                log.info("토큰에 사용자 정보나 소셜 로그인 구분 정보가 존재하지 않음");
+            } else {
+                log.info("aud : " + aud);
+                log.info("provider : " + provider);
+            }
+        } catch (TokenExpiredException e) {
+            log.info("토큰 만료");
+        } catch (Exception e) {
+            log.error(e.getMessage());
+        }
+
+        return new ResponseEntity<>(HttpStatus.OK);
+    }*/
+
 }
