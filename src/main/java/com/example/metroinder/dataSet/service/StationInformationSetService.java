@@ -75,7 +75,8 @@ public class StationInformationSetService {
             if (conn.getResponseCode() >= 200 && conn.getResponseCode() <= 300) {
                 rd = new BufferedReader(new InputStreamReader(conn.getInputStream(), defaultEncodeing));
             } else {
-                rd = new BufferedReader(new InputStreamReader(conn.getErrorStream(), defaultEncodeing));
+                log.info(dataScope + "의 데이터가 존재하지 않습니다.");
+                return;
             }
             StringBuilder stringBuilder = new StringBuilder();
             String line;
@@ -88,7 +89,7 @@ public class StationInformationSetService {
             rd.close();
             conn.disconnect();
 
-            int totalCount = Integer.parseInt(cardSubwayTime.get("ist_total_count").toString());
+            int totalCount = Integer.parseInt(cardSubwayTime.get("list_total_count").toString());
             if(totalCount > 999) {
                 log.info(dataScope + " 데이터는 1000개 이상입니다.");
             }

@@ -33,8 +33,8 @@ public class MainController {
 
     @GetMapping("/test142")
     public void test() throws Exception{
-        //String lastRegistrationDate = stationInformationSetService.getLastRegistrationDate();
-        String lastRegistrationDate = "202401";
+        String lastRegistrationDate = stationInformationSetService.getLastRegistrationDate();
+        //String lastRegistrationDate = "202401";
         log.info("마지막 등록일자 : " + lastRegistrationDate);
 
         DateTimeFormatter dateFormat = DateTimeFormatter.ofPattern("yyyyMM");
@@ -83,6 +83,7 @@ public class MainController {
                     flag = false;
                 }
             }
+            log.info("혼잡도 데이터 저장완료!!!");
 
         }
     }
