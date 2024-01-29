@@ -95,7 +95,6 @@ public class StationInformationSetService {
             }
 
             /*
-
             JSONArray jsonArr = (JSONArray) cardSubwayTime.get("row");
             List<TimeStationPersonnelDto> jsonSameStationDtoList = new ArrayList<>();
             for (int count = 0; count < jsonArr.size(); count++) {
