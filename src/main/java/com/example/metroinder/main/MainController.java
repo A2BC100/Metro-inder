@@ -3,21 +3,27 @@ package com.example.metroinder.main;
 import com.example.metroinder.dataSet.service.StationInformationSetService;
 import com.example.metroinder.user.JwtToken.service.JwtService;
 import com.example.metroinder.user.service.OAuth2LoginService;
+import com.github.signaflo.timeseries.model.arima.ArimaOrder;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
 import java.util.Map;
 
 
@@ -31,21 +37,22 @@ public class MainController {
         return "index";
     }
 
-    @GetMapping("/test142")
+    /*@GetMapping("/test")
     public void test() throws Exception{
-        String lastRegistrationDate = stationInformationSetService.getLastRegistrationDate();
-        //String lastRegistrationDate = "202401";
+        //String lastRegistrationDate = stationInformationSetService.getLastRegistrationDate();
+        //String lastRegistrationDate = "201501";
+        String lastRegistrationDate = null;
         log.info("마지막 등록일자 : " + lastRegistrationDate);
 
         DateTimeFormatter dateFormat = DateTimeFormatter.ofPattern("yyyyMM");
         LocalDate now = LocalDate.now();
-        LocalDate start = LocalDate.of(2022, 05, 10);
+        LocalDate start = LocalDate.of(2015, 1, 10);
         boolean flag = true;
 
         log.info("혼잡도 데이터 저장 시작...");
 
         if(lastRegistrationDate == null) {
-            log.info("데이터 등록 기록 없음. 2022년 05월 데이터부터 등록");
+            log.info("데이터 등록 기록 없음.");
 
             while (flag) {
                 stationInformationSetService.peopleInformationBySeoulAtTimeSave(start.format(dateFormat));
@@ -56,7 +63,7 @@ public class MainController {
             }
             log.info("혼잡도 데이터 저장완료!!!");
 
-            /*log.info("역 정보 데이터 저장중...");
+            *//*log.info("역 정보 데이터 저장중...");
             stationInformationSetService.setStationInformation();
             stationInformationSetService.setLetLon();
             log.info("역 정보 데이터 저장완료");
@@ -65,7 +72,7 @@ public class MainController {
 
             log.info("혼잡도 평균 저장 중...");
             stationInformationSetService.getStationDegreeOfCongestionAvg(count);
-            log.info("혼잡도 평균 저장 완료");*/
+            log.info("혼잡도 평균 저장 완료");*//*
 
         }else {
             LocalDate registrationDate = LocalDate.of(Integer.parseInt(lastRegistrationDate.substring(0, 4)),
@@ -84,8 +91,17 @@ public class MainController {
                 }
             }
             log.info("혼잡도 데이터 저장완료!!!");
-
         }
+    }*/
+    @GetMapping("/test")
+    @ResponseBody
+    public ResponseEntity<Object> timeSeriesForecast() {
+        log.info("시계열 분석 및 예측 테스트");
+
+        //ArimaOrder arimaOrder = ArimaOrder.order();
+
+        //return new ResponseEntity<>(responseBody, responseHeader, HttpStatus.OK);
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 }
 

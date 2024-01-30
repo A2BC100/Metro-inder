@@ -68,7 +68,7 @@ public class StationInformationSetService {
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.setRequestMethod("GET");
             conn.setRequestProperty("Content-type", "application/json");
-            log.info("역, 시간대 별 승하차 인원 API Response code: " + conn.getResponseCode()); /* 연결에 대한 확인*/
+            log.info(dataScope + " 역, 시간대 별 승하차 인원 Response code: " + conn.getResponseCode()); /* 연결에 대한 확인*/
             BufferedReader rd;
 
             // 서비스코드가 정상이면 200~300사이의 숫자
@@ -94,7 +94,7 @@ public class StationInformationSetService {
                 log.info(dataScope + " 데이터는 1000개 이상입니다.");
             }
 
-            /*
+
             JSONArray jsonArr = (JSONArray) cardSubwayTime.get("row");
             List<TimeStationPersonnelDto> jsonSameStationDtoList = new ArrayList<>();
             for (int count = 0; count < jsonArr.size(); count++) {
@@ -213,33 +213,34 @@ public class StationInformationSetService {
                 TimeStationPersonnelDto timeStationPersonnelDto = TimeStationPersonnelDto.builder()
                         .station(station)
                         .line(stnLine)
-                        .oneRide((int) Math.round((double) row.get("ONE_RIDE_NUM")))
-                        .twoRide((int) Math.round((double) row.get("TWO_RIDE_NUM")))
-                        .threeRide((int) Math.round((double) row.get("THREE_RIDE_NUM")))
-                        .fourRide((int) Math.round((double) row.get("FOUR_RIDE_NUM")))
-                        .fiveRide((int) Math.round((double) row.get("FIVE_RIDE_NUM")))
-                        .sixRide((int) Math.round((double) row.get("SIX_RIDE_NUM")))
-                        .sevenRide((int) Math.round((double) row.get("SEVEN_RIDE_NUM")))
-                        .eightRide((int) Math.round((double) row.get("EIGHT_RIDE_NUM")))
-                        .nineRide((int) Math.round((double) row.get("NINE_RIDE_NUM")))
-                        .tenRide((int) Math.round((double) row.get("TEN_RIDE_NUM")))
-                        .elevenRide((int) Math.round((double) row.get("ELEVEN_RIDE_NUM")))
-                        .twelveRide((int) Math.round((double) row.get("TWELVE_RIDE_NUM")))
-                        .thirteenRide((int) Math.round((double) row.get("THIRTEEN_RIDE_NUM")))
-                        .fourteenRide((int) Math.round((double) row.get("FOURTEEN_RIDE_NUM")))
-                        .fifteenRide((int) Math.round((double) row.get("FIFTEEN_RIDE_NUM")))
-                        .sixteenRide((int) Math.round((double) row.get("SIXTEEN_RIDE_NUM")))
-                        .seventeenRide((int) Math.round((double) row.get("SEVENTEEN_RIDE_NUM")))
-                        .eighteenRide((int) Math.round((double) row.get("EIGHTEEN_RIDE_NUM")))
-                        .nineteenRide((int) Math.round((double) row.get("NINETEEN_RIDE_NUM")))
-                        .twentyRide((int) Math.round((double) row.get("TWENTY_RIDE_NUM")))
-                        .twentyoneRide((int) Math.round((double) row.get("TWENTY_ONE_RIDE_NUM")))
-                        .twentytwoRide((int) Math.round((double) row.get("TWENTY_TWO_RIDE_NUM")))
-                        .twentythreeRide((int) Math.round((double) row.get("TWENTY_THREE_RIDE_NUM")))
-                        .midnightRide((int) Math.round((double) row.get("MIDNIGHT_RIDE_NUM")))
+                        .one((int) Math.round((double) row.get("ONE_RIDE_NUM") + (double) row.get("ONE_ALIGHT_NUM")))
+                        .two((int) Math.round((double) row.get("TWO_RIDE_NUM") + (double) row.get("TWO_ALIGHT_NUM")))
+                        .three((int) Math.round((double) row.get("THREE_RIDE_NUM") + (double) row.get("THREE_ALIGHT_NUM")))
+                        .four((int) Math.round((double) row.get("FOUR_RIDE_NUM") + (double) row.get("FOUR_ALIGHT_NUM")))
+                        .five((int) Math.round((double) row.get("FIVE_RIDE_NUM") + (double) row.get("FIVE_ALIGHT_NUM")))
+                        .six((int) Math.round((double) row.get("SIX_RIDE_NUM") + (double) row.get("SIX_ALIGHT_NUM")))
+                        .seven((int) Math.round((double) row.get("SEVEN_RIDE_NUM") + (double) row.get("SEVEN_ALIGHT_NUM")))
+                        .eight((int) Math.round((double) row.get("EIGHT_RIDE_NUM") + (double) row.get("EIGHT_ALIGHT_NUM")))
+                        .nine((int) Math.round((double) row.get("NINE_RIDE_NUM") + (double) row.get("NINE_ALIGHT_NUM")))
+                        .ten((int) Math.round((double) row.get("TEN_RIDE_NUM") + (double) row.get("TEN_ALIGHT_NUM")))
+                        .eleven((int) Math.round((double) row.get("ELEVEN_RIDE_NUM") + (double) row.get("ELEVEN_ALIGHT_NUM")))
+                        .twelve((int) Math.round((double) row.get("TWELVE_RIDE_NUM") + (double) row.get("TWELVE_ALIGHT_NUM")))
+                        .thirteen((int) Math.round((double) row.get("THIRTEEN_RIDE_NUM") + (double) row.get("THIRTEEN_ALIGHT_NUM")))
+                        .fourteen((int) Math.round((double) row.get("FOURTEEN_RIDE_NUM") + (double) row.get("FOURTEEN_ALIGHT_NUM")))
+                        .fifteen((int) Math.round((double) row.get("FIFTEEN_RIDE_NUM") + (double) row.get("FIFTEEN_ALIGHT_NUM")))
+                        .sixteen((int) Math.round((double) row.get("SIXTEEN_RIDE_NUM") + (double) row.get("SIXTEEN_ALIGHT_NUM")))
+                        .seventeen((int) Math.round((double) row.get("SEVENTEEN_RIDE_NUM") + (double) row.get("SEVENTEEN_ALIGHT_NUM")))
+                        .eighteen((int) Math.round((double) row.get("EIGHTEEN_RIDE_NUM") + (double) row.get("EIGHTEEN_ALIGHT_NUM")))
+                        .nineteen((int) Math.round((double) row.get("NINETEEN_RIDE_NUM") + (double) row.get("NINETEEN_ALIGHT_NUM")))
+                        .twenty((int) Math.round((double) row.get("TWENTY_RIDE_NUM") + (double) row.get("TWENTY_ALIGHT_NUM")))
+                        .twentyOne((int) Math.round((double) row.get("TWENTY_ONE_RIDE_NUM") + (double) row.get("TWENTY_ONE_ALIGHT_NUM")))
+                        .twentyTwo((int) Math.round((double) row.get("TWENTY_TWO_RIDE_NUM") + (double) row.get("TWENTY_TWO_ALIGHT_NUM")))
+                        .twentyThree((int) Math.round((double) row.get("TWENTY_THREE_RIDE_NUM") + (double) row.get("TWENTY_THREE_ALIGHT_NUM")))
+                        .midnight((int) Math.round((double) row.get("MIDNIGHT_RIDE_NUM") + (double) row.get("MIDNIGHT_ALIGHT_NUM")))
                         .recordMonth(recordMonth)
                         .build();
                 jsonSameStationDtoList.add(timeStationPersonnelDto);
+                // 특정 역들 중에 2개의 호선이 동시에 지나가는 경우, 다른 호선의 승하차 인원 데이터를 복사해서 DB에 집어넣음
                 if(station.equals("구로") || station.equals("금정") || station.equals("병점") || station.equals("성수") || station.equals("신도림") || station.equals("까치산") || station.equals("총신대입구") || station.equals("한대앞") || station.equals("중앙") || station.equals("고잔") || station.equals("초지") || station.equals("안산") || station.equals("신길온천") || station.equals("정왕") || station.equals("오이도") || station.equals("강동")) {
                     if(station.equals("구로") && stnLine.equals("경부1호선")) {
                         stnLine = "경인1호선";
@@ -263,30 +264,30 @@ public class StationInformationSetService {
                     timeStationPersonnelDto = TimeStationPersonnelDto.builder()
                             .station(station)
                             .line(stnLine)
-                            .oneRide((int) Math.round((double) row.get("ONE_RIDE_NUM")))
-                            .twoRide((int) Math.round((double) row.get("TWO_RIDE_NUM")))
-                            .threeRide((int) Math.round((double) row.get("THREE_RIDE_NUM")))
-                            .fourRide((int) Math.round((double) row.get("FOUR_RIDE_NUM")))
-                            .fiveRide((int) Math.round((double) row.get("FIVE_RIDE_NUM")))
-                            .sixRide((int) Math.round((double) row.get("SIX_RIDE_NUM")))
-                            .sevenRide((int) Math.round((double) row.get("SEVEN_RIDE_NUM")))
-                            .eightRide((int) Math.round((double) row.get("EIGHT_RIDE_NUM")))
-                            .nineRide((int) Math.round((double) row.get("NINE_RIDE_NUM")))
-                            .tenRide((int) Math.round((double) row.get("TEN_RIDE_NUM")))
-                            .elevenRide((int) Math.round((double) row.get("ELEVEN_RIDE_NUM")))
-                            .twelveRide((int) Math.round((double) row.get("TWELVE_RIDE_NUM")))
-                            .thirteenRide((int) Math.round((double) row.get("THIRTEEN_RIDE_NUM")))
-                            .fourteenRide((int) Math.round((double) row.get("FOURTEEN_RIDE_NUM")))
-                            .fifteenRide((int) Math.round((double) row.get("FIFTEEN_RIDE_NUM")))
-                            .sixteenRide((int) Math.round((double) row.get("SIXTEEN_RIDE_NUM")))
-                            .seventeenRide((int) Math.round((double) row.get("SEVENTEEN_RIDE_NUM")))
-                            .eighteenRide((int) Math.round((double) row.get("EIGHTEEN_RIDE_NUM")))
-                            .nineteenRide((int) Math.round((double) row.get("NINETEEN_RIDE_NUM")))
-                            .twentyRide((int) Math.round((double) row.get("TWENTY_RIDE_NUM")))
-                            .twentyoneRide((int) Math.round((double) row.get("TWENTY_ONE_RIDE_NUM")))
-                            .twentytwoRide((int) Math.round((double) row.get("TWENTY_TWO_RIDE_NUM")))
-                            .twentythreeRide((int) Math.round((double) row.get("TWENTY_THREE_RIDE_NUM")))
-                            .midnightRide((int) Math.round((double) row.get("MIDNIGHT_RIDE_NUM")))
+                            .one((int) Math.round((double) row.get("ONE_RIDE_NUM") + (double) row.get("ONE_ALIGHT_NUM")))
+                            .two((int) Math.round((double) row.get("TWO_RIDE_NUM") + (double) row.get("TWO_ALIGHT_NUM")))
+                            .three((int) Math.round((double) row.get("THREE_RIDE_NUM") + (double) row.get("THREE_ALIGHT_NUM")))
+                            .four((int) Math.round((double) row.get("FOUR_RIDE_NUM") + (double) row.get("FOUR_ALIGHT_NUM")))
+                            .five((int) Math.round((double) row.get("FIVE_RIDE_NUM") + (double) row.get("FIVE_ALIGHT_NUM")))
+                            .six((int) Math.round((double) row.get("SIX_RIDE_NUM") + (double) row.get("SIX_ALIGHT_NUM")))
+                            .seven((int) Math.round((double) row.get("SEVEN_RIDE_NUM") + (double) row.get("SEVEN_ALIGHT_NUM")))
+                            .eight((int) Math.round((double) row.get("EIGHT_RIDE_NUM") + (double) row.get("EIGHT_ALIGHT_NUM")))
+                            .nine((int) Math.round((double) row.get("NINE_RIDE_NUM") + (double) row.get("NINE_ALIGHT_NUM")))
+                            .ten((int) Math.round((double) row.get("TEN_RIDE_NUM") + (double) row.get("TEN_ALIGHT_NUM")))
+                            .eleven((int) Math.round((double) row.get("ELEVEN_RIDE_NUM") + (double) row.get("ELEVEN_ALIGHT_NUM")))
+                            .twelve((int) Math.round((double) row.get("TWELVE_RIDE_NUM") + (double) row.get("TWELVE_ALIGHT_NUM")))
+                            .thirteen((int) Math.round((double) row.get("THIRTEEN_RIDE_NUM") + (double) row.get("THIRTEEN_ALIGHT_NUM")))
+                            .fourteen((int) Math.round((double) row.get("FOURTEEN_RIDE_NUM") + (double) row.get("FOURTEEN_ALIGHT_NUM")))
+                            .fifteen((int) Math.round((double) row.get("FIFTEEN_RIDE_NUM") + (double) row.get("FIFTEEN_ALIGHT_NUM")))
+                            .sixteen((int) Math.round((double) row.get("SIXTEEN_RIDE_NUM") + (double) row.get("SIXTEEN_ALIGHT_NUM")))
+                            .seventeen((int) Math.round((double) row.get("SEVENTEEN_RIDE_NUM") + (double) row.get("SEVENTEEN_ALIGHT_NUM")))
+                            .eighteen((int) Math.round((double) row.get("EIGHTEEN_RIDE_NUM") + (double) row.get("EIGHTEEN_ALIGHT_NUM")))
+                            .nineteen((int) Math.round((double) row.get("NINETEEN_RIDE_NUM") + (double) row.get("NINETEEN_ALIGHT_NUM")))
+                            .twenty((int) Math.round((double) row.get("TWENTY_RIDE_NUM") + (double) row.get("TWENTY_ALIGHT_NUM")))
+                            .twentyOne((int) Math.round((double) row.get("TWENTY_ONE_RIDE_NUM") + (double) row.get("TWENTY_ONE_ALIGHT_NUM")))
+                            .twentyTwo((int) Math.round((double) row.get("TWENTY_TWO_RIDE_NUM") + (double) row.get("TWENTY_TWO_ALIGHT_NUM")))
+                            .twentyThree((int) Math.round((double) row.get("TWENTY_THREE_RIDE_NUM") + (double) row.get("TWENTY_THREE_ALIGHT_NUM")))
+                            .midnight((int) Math.round((double) row.get("MIDNIGHT_RIDE_NUM") + (double) row.get("MIDNIGHT_ALIGHT_NUM")))
                             .recordMonth(recordMonth)
                             .build();
                     jsonSameStationDtoList.add(timeStationPersonnelDto);
@@ -296,7 +297,7 @@ public class StationInformationSetService {
             List<TimeStationPersonnel> jsonSameStationList = timeStationPersonnelDto.toEntityList(jsonSameStationDtoList);
             for (TimeStationPersonnel timeStationPersonnel : jsonSameStationList) {
                 timeStationPersonnelRepository.save(timeStationPersonnel);
-            }*/
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
