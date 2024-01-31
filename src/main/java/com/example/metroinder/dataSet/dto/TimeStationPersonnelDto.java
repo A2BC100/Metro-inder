@@ -15,11 +15,7 @@ public class TimeStationPersonnelDto {
     private Long congestionId;
     private String station;
     private String line;
-    private int one;
-    private int two;
-    private int three;
-    private int four;
-    private int five;
+    private int stationNumber;
     private int six;
     private int seven;
     private int eight;
@@ -37,20 +33,15 @@ public class TimeStationPersonnelDto {
     private int twenty;
     private int twentyOne;
     private int twentyTwo;
-    private int twentyThree;
-    private int midnight;
-    private String recordMonth;
+    private int fromTwentyThreeToSixHour;
+    private String recordDate;
 
     @Builder
-    public TimeStationPersonnelDto(Long congestionId, String station, String line, int one, int two, int three, int four, int five, int six, int seven, int eight, int nine, int ten, int eleven, int twelve, int thirteen, int fourteen, int fifteen, int sixteen, int seventeen, int eighteen, int nineteen, int twenty, int twentyOne, int twentyTwo, int twentyThree, int midnight, String recordMonth) {
+    public TimeStationPersonnelDto(Long congestionId, String station, String line, int stationNumber, int six, int seven, int eight, int nine, int ten, int eleven, int twelve, int thirteen, int fourteen, int fifteen, int sixteen, int seventeen, int eighteen, int nineteen, int twenty, int twentyOne, int twentyTwo, int fromTwentyThreeToSixHour, String recordDate) {
         this.congestionId = congestionId;
         this.station = station;
         this.line = line;
-        this.one = one;
-        this.two = two;
-        this.three = three;
-        this.four = four;
-        this.five = five;
+        this.stationNumber = stationNumber;
         this.six = six;
         this.seven = seven;
         this.eight = eight;
@@ -68,45 +59,7 @@ public class TimeStationPersonnelDto {
         this.twenty = twenty;
         this.twentyOne = twentyOne;
         this.twentyTwo = twentyTwo;
-        this.twentyThree = twentyThree;
-        this.midnight = midnight;
-        this.recordMonth = recordMonth;
-    }
-
-    public List<TimeStationPersonnel> toEntityList(List<TimeStationPersonnelDto> jsonSameStationDtoList) {
-        List<TimeStationPersonnel> jsonSameStationList = new ArrayList<>();
-        for(TimeStationPersonnelDto timeStationPersonnelDto : jsonSameStationDtoList) {
-            TimeStationPersonnel timeStationPersonnel = TimeStationPersonnel.builder()
-                    .station(timeStationPersonnelDto.getStation())
-                    .line(timeStationPersonnelDto.getLine())
-                    .one(timeStationPersonnelDto.getOne())
-                    .two(timeStationPersonnelDto.getTwo())
-                    .three(timeStationPersonnelDto.getThree())
-                    .four(timeStationPersonnelDto.getFour())
-                    .five(timeStationPersonnelDto.getFive())
-                    .six(timeStationPersonnelDto.getSix())
-                    .seven(timeStationPersonnelDto.getSeven())
-                    .eight(timeStationPersonnelDto.getEight())
-                    .nine(timeStationPersonnelDto.getNine())
-                    .ten(timeStationPersonnelDto.getTen())
-                    .eleven(timeStationPersonnelDto.getEleven())
-                    .twelve(timeStationPersonnelDto.getTwelve())
-                    .thirteen(timeStationPersonnelDto.getThirteen())
-                    .fourteen(timeStationPersonnelDto.getFourteen())
-                    .fifteen(timeStationPersonnelDto.getFifteen())
-                    .sixteen(timeStationPersonnelDto.getSixteen())
-                    .seventeen(timeStationPersonnelDto.getSeventeen())
-                    .eighteen(timeStationPersonnelDto.getEighteen())
-                    .nineteen(timeStationPersonnelDto.getNineteen())
-                    .twenty(timeStationPersonnelDto.getTwenty())
-                    .twentyOne(timeStationPersonnelDto.getTwentyOne())
-                    .twentyTwo(timeStationPersonnelDto.getTwentyTwo())
-                    .twentyThree(timeStationPersonnelDto.getTwentyThree())
-                    .midnight(timeStationPersonnelDto.getMidnight())
-                    .recordMonth(timeStationPersonnelDto.getRecordMonth())
-                    .build();
-            jsonSameStationList.add(timeStationPersonnel);
-        }
-        return jsonSameStationList;
+        this.fromTwentyThreeToSixHour = fromTwentyThreeToSixHour;
+        this.recordDate = recordDate;
     }
 }

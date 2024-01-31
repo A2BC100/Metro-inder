@@ -10,6 +10,7 @@ import com.example.metroinder.dataSet.repository.*;
 import com.example.metroinder.stationSchedule.dto.StationScheduleDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.poi.ss.formula.functions.T;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -20,6 +21,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 import java.io.BufferedReader;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
@@ -48,9 +50,6 @@ public class StationInformationSetService {
     private String defaultEncodeing = "UTF-8";
     
     // 서울시 지하철호선별 역별 승하차 인원 정보 API 호출 및 저장
-    public String getLastRegistrationDate() {
-        return timeStationPersonnelRepository.lastRegistrationDate();
-    }
 
     public void peopleInformationBySeoulAtTimeSave(String dataScope)  throws IOException {
         try {
@@ -99,7 +98,7 @@ public class StationInformationSetService {
             List<TimeStationPersonnelDto> jsonSameStationDtoList = new ArrayList<>();
             for (int count = 0; count < jsonArr.size(); count++) {
                 JSONObject row = (JSONObject) jsonArr.get(count);
-                String recordMonth = (String) row.get("USE_MON");
+                String recordDate = (String) row.get("USE_MON");
                 String station = deleteBracket((String) row.get("SUB_STA_NM"));
                 String stnLine = (String) row.get("LINE_NUM");
                 switch(stnLine) {
@@ -213,11 +212,6 @@ public class StationInformationSetService {
                 TimeStationPersonnelDto timeStationPersonnelDto = TimeStationPersonnelDto.builder()
                         .station(station)
                         .line(stnLine)
-                        .one((int) Math.round((double) row.get("ONE_RIDE_NUM") + (double) row.get("ONE_ALIGHT_NUM")))
-                        .two((int) Math.round((double) row.get("TWO_RIDE_NUM") + (double) row.get("TWO_ALIGHT_NUM")))
-                        .three((int) Math.round((double) row.get("THREE_RIDE_NUM") + (double) row.get("THREE_ALIGHT_NUM")))
-                        .four((int) Math.round((double) row.get("FOUR_RIDE_NUM") + (double) row.get("FOUR_ALIGHT_NUM")))
-                        .five((int) Math.round((double) row.get("FIVE_RIDE_NUM") + (double) row.get("FIVE_ALIGHT_NUM")))
                         .six((int) Math.round((double) row.get("SIX_RIDE_NUM") + (double) row.get("SIX_ALIGHT_NUM")))
                         .seven((int) Math.round((double) row.get("SEVEN_RIDE_NUM") + (double) row.get("SEVEN_ALIGHT_NUM")))
                         .eight((int) Math.round((double) row.get("EIGHT_RIDE_NUM") + (double) row.get("EIGHT_ALIGHT_NUM")))
@@ -235,9 +229,8 @@ public class StationInformationSetService {
                         .twenty((int) Math.round((double) row.get("TWENTY_RIDE_NUM") + (double) row.get("TWENTY_ALIGHT_NUM")))
                         .twentyOne((int) Math.round((double) row.get("TWENTY_ONE_RIDE_NUM") + (double) row.get("TWENTY_ONE_ALIGHT_NUM")))
                         .twentyTwo((int) Math.round((double) row.get("TWENTY_TWO_RIDE_NUM") + (double) row.get("TWENTY_TWO_ALIGHT_NUM")))
-                        .twentyThree((int) Math.round((double) row.get("TWENTY_THREE_RIDE_NUM") + (double) row.get("TWENTY_THREE_ALIGHT_NUM")))
-                        .midnight((int) Math.round((double) row.get("MIDNIGHT_RIDE_NUM") + (double) row.get("MIDNIGHT_ALIGHT_NUM")))
-                        .recordMonth(recordMonth)
+                        .fromTwentyThreeToSixHour((int) Math.round((double) row.get("TWENTY_THREE_RIDE_NUM") + (double) row.get("TWENTY_THREE_ALIGHT_NUM")))
+                        .recordDate(recordDate)
                         .build();
                 jsonSameStationDtoList.add(timeStationPersonnelDto);
                 // 특정 역들 중에 2개의 호선이 동시에 지나가는 경우, 다른 호선의 승하차 인원 데이터를 복사해서 DB에 집어넣음
@@ -264,11 +257,6 @@ public class StationInformationSetService {
                     timeStationPersonnelDto = TimeStationPersonnelDto.builder()
                             .station(station)
                             .line(stnLine)
-                            .one((int) Math.round((double) row.get("ONE_RIDE_NUM") + (double) row.get("ONE_ALIGHT_NUM")))
-                            .two((int) Math.round((double) row.get("TWO_RIDE_NUM") + (double) row.get("TWO_ALIGHT_NUM")))
-                            .three((int) Math.round((double) row.get("THREE_RIDE_NUM") + (double) row.get("THREE_ALIGHT_NUM")))
-                            .four((int) Math.round((double) row.get("FOUR_RIDE_NUM") + (double) row.get("FOUR_ALIGHT_NUM")))
-                            .five((int) Math.round((double) row.get("FIVE_RIDE_NUM") + (double) row.get("FIVE_ALIGHT_NUM")))
                             .six((int) Math.round((double) row.get("SIX_RIDE_NUM") + (double) row.get("SIX_ALIGHT_NUM")))
                             .seven((int) Math.round((double) row.get("SEVEN_RIDE_NUM") + (double) row.get("SEVEN_ALIGHT_NUM")))
                             .eight((int) Math.round((double) row.get("EIGHT_RIDE_NUM") + (double) row.get("EIGHT_ALIGHT_NUM")))
@@ -286,18 +274,17 @@ public class StationInformationSetService {
                             .twenty((int) Math.round((double) row.get("TWENTY_RIDE_NUM") + (double) row.get("TWENTY_ALIGHT_NUM")))
                             .twentyOne((int) Math.round((double) row.get("TWENTY_ONE_RIDE_NUM") + (double) row.get("TWENTY_ONE_ALIGHT_NUM")))
                             .twentyTwo((int) Math.round((double) row.get("TWENTY_TWO_RIDE_NUM") + (double) row.get("TWENTY_TWO_ALIGHT_NUM")))
-                            .twentyThree((int) Math.round((double) row.get("TWENTY_THREE_RIDE_NUM") + (double) row.get("TWENTY_THREE_ALIGHT_NUM")))
-                            .midnight((int) Math.round((double) row.get("MIDNIGHT_RIDE_NUM") + (double) row.get("MIDNIGHT_ALIGHT_NUM")))
-                            .recordMonth(recordMonth)
+                            .fromTwentyThreeToSixHour((int) Math.round((double) row.get("TWENTY_THREE_RIDE_NUM") + (double) row.get("TWENTY_THREE_ALIGHT_NUM")))
+                            .recordDate(recordDate)
                             .build();
                     jsonSameStationDtoList.add(timeStationPersonnelDto);
                 }
             }
             TimeStationPersonnelDto timeStationPersonnelDto = new TimeStationPersonnelDto();
-            List<TimeStationPersonnel> jsonSameStationList = timeStationPersonnelDto.toEntityList(jsonSameStationDtoList);
+            /*List<TimeStationPersonnel> jsonSameStationList = timeStationPersonnelDto.toEntityList(jsonSameStationDtoList);
             for (TimeStationPersonnel timeStationPersonnel : jsonSameStationList) {
                 timeStationPersonnelRepository.save(timeStationPersonnel);
-            }
+            }*/
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -689,5 +676,129 @@ public class StationInformationSetService {
             matcher = PATTERN_BRACKET.matcher(pureText);
         }
         return pureText;
+    }
+
+    public void excelCongetionDataSave(String url) {
+        try {
+            List<TimeStationPersonnelDto> readCsvRide = new ArrayList<>();
+            List<TimeStationPersonnelDto> readCsvAlight = new ArrayList<>();
+            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(new FileInputStream(url), "EUC-KR"));
+            String csvLine = null;
+            int rideAndAlightCount = 0;
+
+            while((csvLine = bufferedReader.readLine())!=null) {
+                log.info("CSV 파일 읽는 중...");
+                String[] lineContents = csvLine.split(",(?=([^\"]*\"[^\"]*\")*[^\"]*$)",-1);
+                if(lineContents.length != 23) {
+                    log.info("excel 양식이 잘못되어있습니다.");
+                    return;
+                }
+                String recordDate = lineContents[0];
+                String line = lineContents[1];
+                String stationNumber = lineContents[2];
+                if(line == null) {
+                    line = timeStationPersonnelRepository.findLineDate(Integer.parseInt(stationNumber));
+                    log.info("갱신한 호선정보 : " + line);
+                }
+                if(line == null) {
+                    log.info("호선정보를 찾지 못했습니다.");
+                    return;
+                }
+                String station = lineContents[3];
+                String rideGbn = lineContents[4];
+                String six = lineContents[5];
+                String seven = lineContents[6];
+                String eight = lineContents[7];
+                String nine = lineContents[8];
+                String ten = lineContents[9];
+                String eleven = lineContents[10];
+                String twelve = lineContents[11];
+                String thirteen = lineContents[12];
+                String fourteen = lineContents[13];
+                String fifteen = lineContents[14];
+                String sixteen = lineContents[15];
+                String seventeen = lineContents[16];
+                String eighteen = lineContents[17];
+                String nineteen = lineContents[18];
+                String twenty = lineContents[19];
+                String twentyOne = lineContents[20];
+                String twentyTwo = lineContents[21];
+                String fromTwentyThreeToSixHour = lineContents[22];
+                TimeStationPersonnelDto timeStationPersonnelDto = TimeStationPersonnelDto.builder()
+                        .station(station)
+                        .recordDate(recordDate)
+                        .line(line)
+                        .stationNumber(Integer.parseInt(stationNumber))
+                        .six(Integer.parseInt(six))
+                        .seven(Integer.parseInt(seven))
+                        .eight(Integer.parseInt(eight))
+                        .nine(Integer.parseInt(nine))
+                        .ten(Integer.parseInt(ten))
+                        .eleven(Integer.parseInt(eleven))
+                        .twelve(Integer.parseInt(twelve))
+                        .thirteen(Integer.parseInt(thirteen))
+                        .fourteen(Integer.parseInt(fourteen))
+                        .fifteen(Integer.parseInt(fifteen))
+                        .sixteen(Integer.parseInt(sixteen))
+                        .seventeen(Integer.parseInt(seventeen))
+                        .eighteen(Integer.parseInt(eighteen))
+                        .nineteen(Integer.parseInt(nineteen))
+                        .twenty(Integer.parseInt(twenty))
+                        .twentyOne(Integer.parseInt(twentyOne))
+                        .twentyTwo(Integer.parseInt(twentyTwo))
+                        .fromTwentyThreeToSixHour(Integer.parseInt(fromTwentyThreeToSixHour))
+                        .build();
+                if("승차".equals(rideGbn))
+                    readCsvRide.add(timeStationPersonnelDto);
+                else if("하차".equals(rideGbn))
+                    readCsvAlight.add(timeStationPersonnelDto);
+                else {
+                    log.info("승하차 구분 데이터에 문제가 있습니다. 승하차 구분 : " + rideGbn);
+                    return;
+                }
+            }
+            /*for(TimeStationPersonnelDto rideDto : readCsvRide) {
+                log.info("승하차 데이터 합치는 중");
+                for(TimeStationPersonnelDto alightDto : readCsvAlight) {
+                    if (rideDto.getRecordDate().equals(alightDto.getRecordDate()) && rideDto.getStationNumber() == alightDto.getStationNumber()) {
+                        rideAndAlightCount++;
+                        TimeStationPersonnel timeStationPersonnel = TimeStationPersonnel.builder()
+                                .station(rideDto.getStation())
+                                .recordDate(rideDto.getRecordDate())
+                                .line(rideDto.getLine())
+                                .stationNumber(rideDto.getStationNumber())
+                                .six(rideDto.getSix() + alightDto.getSix())
+                                .seven(rideDto.getSeven() + alightDto.getSeven())
+                                .eight(rideDto.getEight() + alightDto.getEight())
+                                .nine(rideDto.getNine() + alightDto.getNine())
+                                .ten(rideDto.getTen() + alightDto.getTen())
+                                .eleven(rideDto.getEleven() + alightDto.getEleven())
+                                .twelve(rideDto.getTwelve() + alightDto.getTwelve())
+                                .thirteen(rideDto.getThirteen() + alightDto.getThirteen())
+                                .fourteen(rideDto.getFourteen() + alightDto.getFourteen())
+                                .fifteen(rideDto.getFifteen() + alightDto.getFifteen())
+                                .sixteen(rideDto.getSixteen() + alightDto.getSixteen())
+                                .seventeen(rideDto.getSeventeen() + alightDto.getSeventeen())
+                                .eighteen(rideDto.getEighteen()+ alightDto.getEighteen())
+                                .nineteen(rideDto.getNineteen() + alightDto.getNineteen())
+                                .twenty(rideDto.getTwenty() + alightDto.getTwenty())
+                                .twentyOne(rideDto.getTwentyOne() + alightDto.getTwentyOne())
+                                .twentyTwo(rideDto.getTwentyTwo() + alightDto.getTwentyTwo())
+                                .fromTwentyThreeToSixHour(rideDto.getFromTwentyThreeToSixHour() + alightDto.getFromTwentyThreeToSixHour())
+                                .build();
+                        timeStationPersonnelRepository.save(timeStationPersonnel);
+                        log.info("데이터 저장 중...");
+                        break;
+                    }
+                }
+            }
+            if (rideAndAlightCount == 0) {
+                log.info("일치하는 승하차 정보가 하나도 없습니다.");
+                return;
+            }
+            log.info("데이터 저장 완료..!");*/
+        }catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }

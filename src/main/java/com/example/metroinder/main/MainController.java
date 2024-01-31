@@ -1,30 +1,15 @@
 package com.example.metroinder.main;
 
 import com.example.metroinder.dataSet.service.StationInformationSetService;
-import com.example.metroinder.user.JwtToken.service.JwtService;
-import com.example.metroinder.user.service.OAuth2LoginService;
-import com.github.signaflo.timeseries.model.arima.ArimaOrder;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
-import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.ResponseBody;
-
-import java.text.SimpleDateFormat;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.util.HashMap;
-import java.util.Map;
+import java.io.BufferedReader;
+import java.io.FileInputStream;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.List;
 
 
 @Slf4j
@@ -32,9 +17,17 @@ import java.util.Map;
 @Controller
 public class MainController {
     private final StationInformationSetService stationInformationSetService;
+
+
     @GetMapping("/")
     public String mainAccess() {
         return "index";
+    }
+
+    @GetMapping("/test")
+    public void dateSet() {
+        stationInformationSetService.excelCongetionDataSave("C:\\Users\\iway\\Downloads\\2016~2019.csv");
+        //stationInformationSetService.excelCongetionDataSave("C:\\Users\\iway\\Downloads\\2020~20231031.csv");
     }
 
     /*@GetMapping("/test")
@@ -93,15 +86,5 @@ public class MainController {
             log.info("혼잡도 데이터 저장완료!!!");
         }
     }*/
-    @GetMapping("/test")
-    @ResponseBody
-    public ResponseEntity<Object> timeSeriesForecast() {
-        log.info("시계열 분석 및 예측 테스트");
-
-        //ArimaOrder arimaOrder = ArimaOrder.order();
-
-        //return new ResponseEntity<>(responseBody, responseHeader, HttpStatus.OK);
-        return new ResponseEntity<>(HttpStatus.OK);
-    }
 }
 

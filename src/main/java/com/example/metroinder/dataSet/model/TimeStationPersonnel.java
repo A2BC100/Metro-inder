@@ -5,7 +5,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.ColumnDefault;
-
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -22,16 +21,7 @@ public class TimeStationPersonnel extends Timestamped {
     private Long congestionId;
     private String station;
     private String line;
-    @ColumnDefault("0")
-    private int one;
-    @ColumnDefault("0")
-    private int two;
-    @ColumnDefault("0")
-    private int three;
-    @ColumnDefault("0")
-    private int four;
-    @ColumnDefault("0")
-    private int five;
+    private int stationNumber;
     @ColumnDefault("0")
     private int six;
     @ColumnDefault("0")
@@ -67,20 +57,14 @@ public class TimeStationPersonnel extends Timestamped {
     @ColumnDefault("0")
     private int twentyTwo;
     @ColumnDefault("0")
-    private int twentyThree;
-    @ColumnDefault("0")
-    private int midnight;
-    private String recordMonth;
+    private int fromTwentyThreeToSixHour;
+    private String recordDate;
     @Builder
-    public TimeStationPersonnel(Long congestionId, String station, String line, int one, int two, int three, int four, int five, int six, int seven, int eight, int nine, int ten, int eleven, int twelve, int thirteen, int fourteen, int fifteen, int sixteen, int seventeen, int eighteen, int nineteen, int twenty, int twentyOne, int twentyTwo, int twentyThree, int midnight, String recordMonth) {
+    public TimeStationPersonnel(Long congestionId, String station, String line, int stationNumber, int six, int seven, int eight, int nine, int ten, int eleven, int twelve, int thirteen, int fourteen, int fifteen, int sixteen, int seventeen, int eighteen, int nineteen, int twenty, int twentyOne, int twentyTwo, int fromTwentyThreeToSixHour, String recordDate) {
         this.congestionId = congestionId;
         this.station = station;
         this.line = line;
-        this.one = one;
-        this.two = two;
-        this.three = three;
-        this.four = four;
-        this.five = five;
+        this.stationNumber = stationNumber;
         this.six = six;
         this.seven = seven;
         this.eight = eight;
@@ -98,8 +82,7 @@ public class TimeStationPersonnel extends Timestamped {
         this.twenty = twenty;
         this.twentyOne = twentyOne;
         this.twentyTwo = twentyTwo;
-        this.twentyThree = twentyThree;
-        this.midnight = midnight;
-        this.recordMonth = recordMonth;
+        this.fromTwentyThreeToSixHour = fromTwentyThreeToSixHour;
+        this.recordDate = recordDate;
     }
 }
