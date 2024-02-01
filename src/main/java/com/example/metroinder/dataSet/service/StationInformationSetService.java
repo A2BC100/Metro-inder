@@ -10,16 +10,13 @@ import com.example.metroinder.dataSet.repository.*;
 import com.example.metroinder.stationSchedule.dto.StationScheduleDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.poi.ss.formula.functions.T;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
-
 import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -28,7 +25,9 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -51,8 +50,10 @@ public class StationInformationSetService {
     
     // 서울시 지하철호선별 역별 승하차 인원 정보 API 호출 및 저장
 
-    public void peopleInformationBySeoulAtTimeSave(String dataScope)  throws IOException {
+    public void peopleInformationBySeoulAtTimeSave(String dataScope) {
         try {
+            //String url = "http://openapi.seoul.go.kr:8088/" + generalKey + "/json/CardSubwayTime/1/999/" + dataScope;
+
             StringBuilder urlBuilder = new StringBuilder("http://openapi.seoul.go.kr:8088");
             urlBuilder.append("/" + URLEncoder.encode(generalKey, defaultEncodeing));
             urlBuilder.append("/" + URLEncoder.encode("json", defaultEncodeing));
@@ -62,7 +63,7 @@ public class StationInformationSetService {
 
             /* 서비스별 추가 요청인자*/
             urlBuilder.append("/" + URLEncoder.encode(dataScope, defaultEncodeing));//월별, 현재 최신 2022년 10월까지
-
+            //URL url = new URL(url);
             URL url = new URL(urlBuilder.toString());
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.setRequestMethod("GET");
@@ -74,7 +75,7 @@ public class StationInformationSetService {
             if (conn.getResponseCode() >= 200 && conn.getResponseCode() <= 300) {
                 rd = new BufferedReader(new InputStreamReader(conn.getInputStream(), defaultEncodeing));
             } else {
-                log.info(dataScope + "의 데이터가 존재하지 않습니다.");
+                log.info(dataScope + "의 데이터가 존재하지 않거나 API 서버에 요청 실패");
                 return;
             }
             StringBuilder stringBuilder = new StringBuilder();
@@ -88,14 +89,33 @@ public class StationInformationSetService {
             rd.close();
             conn.disconnect();
 
-            int totalCount = Integer.parseInt(cardSubwayTime.get("list_total_count").toString());
-            if(totalCount > 999) {
-                log.info(dataScope + " 데이터는 1000개 이상입니다.");
+            JSONArray jsonArr = (JSONArray) cardSubwayTime.get("row");
+
+            List<Map<String, String>> notExistStationDataList = new ArrayList<>();
+            for (int i = 0; i < jsonArr.size(); i++) {
+                JSONObject row = (JSONObject) jsonArr.get(i);
+                String station = deleteBracket((String) row.get("SUB_STA_NM"));
+                String stnLine = (String) row.get("LINE_NUM");
+                int index = stnLine.indexOf("호선");
+                if(-1 != index) {
+                    stnLine = stnLine.replace("호선", "");
+                }else {
+                    if(!"일산선".equals(stnLine) && !"수인선".equals(stnLine) && !"분당선".equals(stnLine) &&
+                        !"경의선".equals(stnLine) && !"중앙선".equals(stnLine) && !"경부선".equals(stnLine) &&
+                        !"경인선".equals(stnLine) && !"안산선".equals(stnLine) && !"과천선".equals(stnLine) &&
+                        !"장항선".equals(stnLine) && !"경춘선".equals(stnLine) && !"경원선".equals(stnLine)) {
+                        Map<String, String> map = new HashMap<>();
+                        map.put("station", station);
+                        map.put("line", stnLine);
+                        log.info("역이름 : " + station);
+                        log.info("호선 : " + stnLine);
+                        notExistStationDataList.add(map);
+                    }
+                }
             }
 
-
-            JSONArray jsonArr = (JSONArray) cardSubwayTime.get("row");
-            List<TimeStationPersonnelDto> jsonSameStationDtoList = new ArrayList<>();
+            return;
+            /*List<TimeStationPersonnelDto> jsonSameStationDtoList = new ArrayList<>();
             for (int count = 0; count < jsonArr.size(); count++) {
                 JSONObject row = (JSONObject) jsonArr.get(count);
                 String recordDate = (String) row.get("USE_MON");
@@ -281,7 +301,7 @@ public class StationInformationSetService {
                 }
             }
             TimeStationPersonnelDto timeStationPersonnelDto = new TimeStationPersonnelDto();
-            /*List<TimeStationPersonnel> jsonSameStationList = timeStationPersonnelDto.toEntityList(jsonSameStationDtoList);
+            List<TimeStationPersonnel> jsonSameStationList = timeStationPersonnelDto.toEntityList(jsonSameStationDtoList);
             for (TimeStationPersonnel timeStationPersonnel : jsonSameStationList) {
                 timeStationPersonnelRepository.save(timeStationPersonnel);
             }*/
@@ -683,8 +703,11 @@ public class StationInformationSetService {
             List<TimeStationPersonnelDto> readCsvRide = new ArrayList<>();
             List<TimeStationPersonnelDto> readCsvAlight = new ArrayList<>();
             BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(new FileInputStream(url), "EUC-KR"));
+            if(bufferedReader == null) {
+                log.info("파일명에 해당하는 파일이 없습니다.");
+                return;
+            }
             String csvLine = null;
-            int rideAndAlightCount = 0;
 
             while((csvLine = bufferedReader.readLine())!=null) {
                 log.info("CSV 파일 읽는 중...");
@@ -696,13 +719,8 @@ public class StationInformationSetService {
                 String recordDate = lineContents[0];
                 String line = lineContents[1];
                 String stationNumber = lineContents[2];
-                if(line == null) {
+                if(line == null || "".equals(line)) {
                     line = timeStationPersonnelRepository.findLineDate(Integer.parseInt(stationNumber));
-                    log.info("갱신한 호선정보 : " + line);
-                }
-                if(line == null) {
-                    log.info("호선정보를 찾지 못했습니다.");
-                    return;
                 }
                 String station = lineContents[3];
                 String rideGbn = lineContents[4];
@@ -729,24 +747,24 @@ public class StationInformationSetService {
                         .recordDate(recordDate)
                         .line(line)
                         .stationNumber(Integer.parseInt(stationNumber))
-                        .six(Integer.parseInt(six))
-                        .seven(Integer.parseInt(seven))
-                        .eight(Integer.parseInt(eight))
-                        .nine(Integer.parseInt(nine))
-                        .ten(Integer.parseInt(ten))
-                        .eleven(Integer.parseInt(eleven))
-                        .twelve(Integer.parseInt(twelve))
-                        .thirteen(Integer.parseInt(thirteen))
-                        .fourteen(Integer.parseInt(fourteen))
-                        .fifteen(Integer.parseInt(fifteen))
-                        .sixteen(Integer.parseInt(sixteen))
-                        .seventeen(Integer.parseInt(seventeen))
-                        .eighteen(Integer.parseInt(eighteen))
-                        .nineteen(Integer.parseInt(nineteen))
-                        .twenty(Integer.parseInt(twenty))
-                        .twentyOne(Integer.parseInt(twentyOne))
-                        .twentyTwo(Integer.parseInt(twentyTwo))
-                        .fromTwentyThreeToSixHour(Integer.parseInt(fromTwentyThreeToSixHour))
+                        .six(Integer.parseInt(six.replace(" ", "")))
+                        .seven(Integer.parseInt(seven.replace(" ", "")))
+                        .eight(Integer.parseInt(eight.replace(" ", "")))
+                        .nine(Integer.parseInt(nine.replace(" ", "")))
+                        .ten(Integer.parseInt(ten.replace(" ", "")))
+                        .eleven(Integer.parseInt(eleven.replace(" ", "")))
+                        .twelve(Integer.parseInt(twelve.replace(" ", "")))
+                        .thirteen(Integer.parseInt(thirteen.replace(" ", "")))
+                        .fourteen(Integer.parseInt(fourteen.replace(" ", "")))
+                        .fifteen(Integer.parseInt(fifteen.replace(" ", "")))
+                        .sixteen(Integer.parseInt(sixteen.replace(" ", "")))
+                        .seventeen(Integer.parseInt(seventeen.replace(" ", "")))
+                        .eighteen(Integer.parseInt(eighteen.replace(" ", "")))
+                        .nineteen(Integer.parseInt(nineteen.replace(" ", "")))
+                        .twenty(Integer.parseInt(twenty.replace(" ", "")))
+                        .twentyOne(Integer.parseInt(twentyOne.replace(" ", "")))
+                        .twentyTwo(Integer.parseInt(twentyTwo.replace(" ", "")))
+                        .fromTwentyThreeToSixHour(Integer.parseInt(fromTwentyThreeToSixHour.replace(" ", "")))
                         .build();
                 if("승차".equals(rideGbn))
                     readCsvRide.add(timeStationPersonnelDto);
@@ -757,16 +775,18 @@ public class StationInformationSetService {
                     return;
                 }
             }
-            /*for(TimeStationPersonnelDto rideDto : readCsvRide) {
-                log.info("승하차 데이터 합치는 중");
+
+            int count = 0;
+            for(TimeStationPersonnelDto rideDto : readCsvRide) {
+                boolean flag = false;
                 for(TimeStationPersonnelDto alightDto : readCsvAlight) {
                     if (rideDto.getRecordDate().equals(alightDto.getRecordDate()) && rideDto.getStationNumber() == alightDto.getStationNumber()) {
-                        rideAndAlightCount++;
+                        count++;
                         TimeStationPersonnel timeStationPersonnel = TimeStationPersonnel.builder()
-                                .station(rideDto.getStation())
-                                .recordDate(rideDto.getRecordDate())
-                                .line(rideDto.getLine())
-                                .stationNumber(rideDto.getStationNumber())
+                                .station(alightDto.getStation())
+                                .recordDate(alightDto.getRecordDate())
+                                .line(alightDto.getLine())
+                                .stationNumber(alightDto.getStationNumber())
                                 .six(rideDto.getSix() + alightDto.getSix())
                                 .seven(rideDto.getSeven() + alightDto.getSeven())
                                 .eight(rideDto.getEight() + alightDto.getEight())
@@ -787,16 +807,16 @@ public class StationInformationSetService {
                                 .fromTwentyThreeToSixHour(rideDto.getFromTwentyThreeToSixHour() + alightDto.getFromTwentyThreeToSixHour())
                                 .build();
                         timeStationPersonnelRepository.save(timeStationPersonnel);
-                        log.info("데이터 저장 중...");
+                        log.info("데이터 저장 중 : " + count);
+                        flag = true;
                         break;
                     }
                 }
+                if (flag) {
+                    continue;
+                }
             }
-            if (rideAndAlightCount == 0) {
-                log.info("일치하는 승하차 정보가 하나도 없습니다.");
-                return;
-            }
-            log.info("데이터 저장 완료..!");*/
+            log.info("데이터 저장 완료..!");
         }catch (Exception e) {
             e.printStackTrace();
         }

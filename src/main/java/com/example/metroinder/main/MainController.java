@@ -26,7 +26,7 @@ public class MainController {
 
     @GetMapping("/test")
     public void dateSet() {
-        stationInformationSetService.excelCongetionDataSave("C:\\Users\\iway\\Downloads\\2016~2019.csv");
+        stationInformationSetService.peopleInformationBySeoulAtTimeSave("202312");
         //stationInformationSetService.excelCongetionDataSave("C:\\Users\\iway\\Downloads\\2020~20231031.csv");
     }
 
