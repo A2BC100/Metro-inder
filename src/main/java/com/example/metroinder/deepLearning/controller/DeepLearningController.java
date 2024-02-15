@@ -14,6 +14,6 @@ public class DeepLearningController {
 
     @GetMapping("test")
     public void test() {
-
+        deepLearningService.test();
     }
 }
