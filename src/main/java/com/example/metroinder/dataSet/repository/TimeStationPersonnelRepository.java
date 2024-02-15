@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.Date;
+import java.util.List;
 
 
 public interface TimeStationPersonnelRepository extends JpaRepository<TimeStationPersonnel, Long> {
@@ -20,6 +21,13 @@ public interface TimeStationPersonnelRepository extends JpaRepository<TimeStatio
     String findLineDate(@Param("stationNumber") int stationNum);
 
     TimeStationPersonnel findByStation(String station);
+
+
+    @Query(value = "SELECT * FROM a2b76.time_station_personnel ORDER BY record_date ASC, congestion_id ASC", nativeQuery = true)
+    List<TimeStationPersonnel> findAllByOrderByRecordDateDesc();
+
+    @Query(value = "SELECT * FROM a2b76.time_station_personnel WHERE line = :line and station = :station and record_date = :date", nativeQuery = true)
+    TimeStationPersonnel findGetLastRegistData(@Param("line") String line, @Param("station") String station, @Param("date") String date);
 
     public static interface SameStationPeople {
         String getStation();
