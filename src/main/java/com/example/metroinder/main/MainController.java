@@ -18,13 +18,12 @@ import java.util.List;
 public class MainController {
     private final StationInformationSetService stationInformationSetService;
 
-
     @GetMapping("/")
     public String mainAccess() {
         return "index";
     }
 
-    @GetMapping("/test")
+    @GetMapping("/dataSet")
     public void dateSet() {
         stationInformationSetService.peopleInformationBySeoulAtTimeSave("202312");
         //stationInformationSetService.excelCongetionDataSave("C:\\Users\\iway\\Downloads\\2020~20231031.csv");
