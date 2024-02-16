@@ -18,12 +18,13 @@ import javax.persistence.Id;
 public class TimeStationPersonnel extends Timestamped {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    private Long congestionId;
-    private String station;
-    private String line;
-    private int stationNumber;
+    private Long congestionId; // primary key
+    private String station; // 역이름
+    private String line; // 호선
+    private int stationNumber; // 역 코드
+    /* 06시부터 23시~05까지의 합, 승하차인원*/
     @ColumnDefault("0")
-    private int six;
+    private int six; 
     @ColumnDefault("0")
     private int seven;
     @ColumnDefault("0")
@@ -58,7 +59,7 @@ public class TimeStationPersonnel extends Timestamped {
     private int twentyTwo;
     @ColumnDefault("0")
     private int fromTwentyThreeToSixHour;
-    private String recordDate;
+    private String recordDate; // 승하차 일자
     @Builder
     public TimeStationPersonnel(Long congestionId, String station, String line, int stationNumber, int six, int seven, int eight, int nine, int ten, int eleven, int twelve, int thirteen, int fourteen, int fifteen, int sixteen, int seventeen, int eighteen, int nineteen, int twenty, int twentyOne, int twentyTwo, int fromTwentyThreeToSixHour, String recordDate) {
         this.congestionId = congestionId;
