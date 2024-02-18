@@ -26,6 +26,7 @@ import org.nd4j.linalg.activations.Activation;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.DataSet;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
+import org.nd4j.linalg.dataset.api.preprocessor.NormalizerMinMaxScaler;
 import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.learning.config.Adam;
 import org.nd4j.linalg.lossfunctions.LossFunctions;
@@ -52,7 +53,7 @@ public class DeepLearningService {
             // 하이퍼파라미터 설정
             int batchSize = 32; // 배치, 현재 32, 한계는 64 정도로 추정
             int numInputs = 1; // 입력 변수 수 (하나의 시계열 데이터를 사용하기 때문에 1)
-            int numOutputs = 1; // 출력 변수 수 (다음 시간대의 승하차 인원 예측을 위해 1)
+            int numOutputs = 1; // 출력 변수 수 (다음 시간대의 승하차 인원 예측을 위해a 1)
             int lstmLayerSize = 50; // LSTM 레이어의 크기
             int numEpochs = 10; // 에폭, 학습을 하면서 적당한 크기로 조절이 필요.
 
@@ -103,7 +104,11 @@ public class DeepLearningService {
                             .build())
                     .build();
             log.info("신경망 구성 설정 완료");
-            
+
+            NormalizerMinMaxScaler scaler = new NormalizerMinMaxScaler();
+            scaler.fit(iterator);
+            iterator.setPreProcessor(scaler);
+
             MultiLayerNetwork net = new MultiLayerNetwork(conf);
             net.init();
 
