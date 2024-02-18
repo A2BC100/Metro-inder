@@ -1,9 +1,9 @@
 package com.example.metroinder.realtime.service;
 
 
-import com.example.metroinder.realtime.model.GpsTransfer;
-import com.revinate.guava.util.concurrent.RateLimiter;
 
+import com.revinate.guava.util.concurrent.RateLimiter;
+import com.example.metroinder.realtime.model.GpsTransfer;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
