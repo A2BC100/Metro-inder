@@ -20,14 +20,14 @@ public interface TimeStationPersonnelRepository extends JpaRepository<TimeStatio
     @Query(value = "SELECT line FROM time_station_personnel WHERE station_number = :stationNumber ORDER BY congestion_id ASC LIMIT 1", nativeQuery = true)
     String findLineDate(@Param("stationNumber") int stationNum);
 
-    TimeStationPersonnel findByStation(String station);
-
-
-    @Query(value = "SELECT * FROM a2b76.time_station_personnel ORDER BY record_date ASC, congestion_id ASC", nativeQuery = true)
+    @Query(value = "SELECT * FROM a2b76.time_station_personnel WHERE STR_TO_DATE(record_date, '%Y-%m-%d') BETWEEN '2015-01-01' AND '2023-10-30' ORDER BY record_date ASC, congestion_id ASC", nativeQuery = true)
     List<TimeStationPersonnel> findAllByOrderByRecordDateDesc();
 
     @Query(value = "SELECT * FROM a2b76.time_station_personnel WHERE line = :line and station = :station and record_date = :date", nativeQuery = true)
-    TimeStationPersonnel findGetLastRegistData(@Param("line") String line, @Param("station") String station, @Param("date") String date);
+    TimeStationPersonnel findLineAndStationAndRecordDate(@Param("line") String line, @Param("station") String station, @Param("date") String date);
+
+    @Query(value = "SELECT * FROM a2b76.time_station_personnel WHERE line = :line and station LIKE :station and record_date = :date", nativeQuery = true)
+    TimeStationPersonnel findReanamedStation(@Param("line") String line, @Param("station") String station, @Param("date") String date);
 
     public static interface SameStationPeople {
         String getStation();

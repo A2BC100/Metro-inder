@@ -700,15 +700,15 @@ public class StationInformationSetService {
 
     public void excelCongetionDataSave(String url) {
         try {
-            List<TimeStationPersonnelDto> readCsvRide = new ArrayList<>();
-            List<TimeStationPersonnelDto> readCsvAlight = new ArrayList<>();
+            //List<TimeStationPersonnelDto> readCsvRide = new ArrayList<>();
+            //List<TimeStationPersonnelDto> readCsvAlight = new ArrayList<>();
             BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(new FileInputStream(url), "EUC-KR"));
             if(bufferedReader == null) {
                 log.info("파일명에 해당하는 파일이 없습니다.");
                 return;
             }
             String csvLine = null;
-
+            log.info("저장시작");
             while((csvLine = bufferedReader.readLine())!=null) {
                 log.info("CSV 파일 읽는 중...");
                 String[] lineContents = csvLine.split(",(?=([^\"]*\"[^\"]*\")*[^\"]*$)",-1);
@@ -723,26 +723,26 @@ public class StationInformationSetService {
                     line = timeStationPersonnelRepository.findLineDate(Integer.parseInt(stationNumber));
                 }
                 String station = lineContents[3];
-                String rideGbn = lineContents[4];
-                String six = lineContents[5];
-                String seven = lineContents[6];
-                String eight = lineContents[7];
-                String nine = lineContents[8];
-                String ten = lineContents[9];
-                String eleven = lineContents[10];
-                String twelve = lineContents[11];
-                String thirteen = lineContents[12];
-                String fourteen = lineContents[13];
-                String fifteen = lineContents[14];
-                String sixteen = lineContents[15];
-                String seventeen = lineContents[16];
-                String eighteen = lineContents[17];
-                String nineteen = lineContents[18];
-                String twenty = lineContents[19];
-                String twentyOne = lineContents[20];
-                String twentyTwo = lineContents[21];
-                String fromTwentyThreeToSixHour = lineContents[22];
-                TimeStationPersonnelDto timeStationPersonnelDto = TimeStationPersonnelDto.builder()
+                //String lineGbn = lineContents[3];
+                String six = lineContents[4];
+                String seven = lineContents[5];
+                String eight = lineContents[6];
+                String nine = lineContents[7];
+                String ten = lineContents[8];
+                String eleven = lineContents[9];
+                String twelve = lineContents[10];
+                String thirteen = lineContents[11];
+                String fourteen = lineContents[12];
+                String fifteen = lineContents[13];
+                String sixteen = lineContents[14];
+                String seventeen = lineContents[15];
+                String eighteen = lineContents[16];
+                String nineteen = lineContents[17];
+                String twenty = lineContents[18];
+                String twentyOne = lineContents[19];
+                String twentyTwo = lineContents[20];
+                String fromTwentyThreeToSixHour = lineContents[21];
+                TimeStationPersonnel timeStationPersonnel = TimeStationPersonnel.builder()
                         .station(station)
                         .recordDate(recordDate)
                         .line(line)
@@ -766,18 +766,19 @@ public class StationInformationSetService {
                         .twentyTwo(Integer.parseInt(twentyTwo.replace(" ", "")))
                         .fromTwentyThreeToSixHour(Integer.parseInt(fromTwentyThreeToSixHour.replace(" ", "")))
                         .build();
-                if("승차".equals(rideGbn))
+                /*if("승차".equals(rideGbn))
                     readCsvRide.add(timeStationPersonnelDto);
                 else if("하차".equals(rideGbn))
                     readCsvAlight.add(timeStationPersonnelDto);
                 else {
                     log.info("승하차 구분 데이터에 문제가 있습니다. 승하차 구분 : " + rideGbn);
                     return;
-                }
+                }*/
+                timeStationPersonnelRepository.save(timeStationPersonnel);
             }
-
-            int count = 0;
-            for(TimeStationPersonnelDto rideDto : readCsvRide) {
+            log.info("저장완료");
+            //int count = 0;
+            /*for(TimeStationPersonnelDto rideDto : readCsvRide) {
                 boolean flag = false;
                 for(TimeStationPersonnelDto alightDto : readCsvAlight) {
                     if (rideDto.getRecordDate().equals(alightDto.getRecordDate()) && rideDto.getStationNumber() == alightDto.getStationNumber()) {
@@ -815,7 +816,7 @@ public class StationInformationSetService {
                 if (flag) {
                     continue;
                 }
-            }
+            }*/
             log.info("데이터 저장 완료..!");
         }catch (Exception e) {
             e.printStackTrace();

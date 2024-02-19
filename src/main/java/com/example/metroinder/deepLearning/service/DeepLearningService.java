@@ -5,12 +5,6 @@ import com.example.metroinder.dataSet.repository.TimeStationPersonnelRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.deeplearning4j.datasets.iterator.impl.ListDataSetIterator;
-import org.deeplearning4j.earlystopping.EarlyStoppingConfiguration;
-import org.deeplearning4j.earlystopping.saver.LocalFileModelSaver;
-import org.deeplearning4j.earlystopping.scorecalc.DataSetLossCalculator;
-import org.deeplearning4j.earlystopping.termination.MaxEpochsTerminationCondition;
-import org.deeplearning4j.earlystopping.termination.MaxScoreIterationTerminationCondition;
-import org.deeplearning4j.earlystopping.trainer.EarlyStoppingTrainer;
 import org.deeplearning4j.nn.api.OptimizationAlgorithm;
 import org.deeplearning4j.nn.conf.GradientNormalization;
 import org.deeplearning4j.nn.conf.MultiLayerConfiguration;
@@ -19,9 +13,9 @@ import org.deeplearning4j.nn.conf.layers.LSTM;
 import org.deeplearning4j.nn.conf.layers.RnnOutputLayer;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import org.deeplearning4j.nn.weights.WeightInit;
-import org.deeplearning4j.optimize.listeners.ScoreIterationListener;
 import org.deeplearning4j.util.ModelSerializer;
 import org.nd4j.evaluation.classification.Evaluation;
+import org.nd4j.evaluation.regression.RegressionEvaluation;
 import org.nd4j.linalg.activations.Activation;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.DataSet;
@@ -34,8 +28,10 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
+import java.util.stream.IntStream;
 
 @Slf4j
 @Service
@@ -47,38 +43,30 @@ public class DeepLearningService {
         return timeStationPersonnelRepository.findAllByOrderByRecordDateDesc();
     }
 
-    // 모델 학습 및 파일 저장
+
     public void trainModel() {
         try {
             // 하이퍼파라미터 설정
-            int batchSize = 32; // 배치, 현재 32, 한계는 64 정도로 추정
-            int numInputs = 1; // 입력 변수 수 (하나의 시계열 데이터를 사용하기 때문에 1)
-            int numOutputs = 1; // 출력 변수 수 (다음 시간대의 승하차 인원 예측을 위해a 1)
+            int batchSize = 32; // 배치 크기 32설정, 복잡한 데이터이기 때문에 배치가 낮을 수록 좋으나 속도 이슈로 일단 32설정, 배치 1
+            int numInputs = 18; // 시간대별 데이터 크기
+            int numOutputs = 1; // 예제에서는 출력을 사용하지 않음
             int lstmLayerSize = 50; // LSTM 레이어의 크기
-            int numEpochs = 10; // 에폭, 학습을 하면서 적당한 크기로 조절이 필요.
+            int numEpochs = 10; // 에폭
 
             List<TimeStationPersonnel> dataList = findAllByOrderByRecordDateDesc();
             if (dataList == null || dataList.isEmpty()) {
                 log.error("데이터를 가져오지 못했습니다.");
                 return;
             }
+            log.info("데이터 로드 성공");
 
+            // 각 역, 호선, 일 별로 데이터 그룹화
+            Map<String, Map<String, Map<String, List<TimeStationPersonnel>>>> groupedData = groupDataByStationDayLine(dataList);
+            log.info("데이터 그룹화 성공");
             // 데이터셋 생성
-            List<DataSet> dataSetList = new ArrayList<>();
-            for (int i = 0; i < dataList.size() - 1; i++) {
-                TimeStationPersonnel currentData = dataList.get(i);
-                TimeStationPersonnel nextData = dataList.get(i + 1);
+            List<DataSet> dataSetList = createDataSet(groupedData);
+            log.info("데이터셋 생성 성공");
 
-                double[][][] inputArray = getDataArray(currentData);
-                double[][][] outputArray = getDataArray(nextData);
-
-                INDArray input = Nd4j.create(inputArray);
-                INDArray output = Nd4j.create(outputArray);
-
-                dataSetList.add(new DataSet(input, output));
-            }
-
-            log.info("DataSet 설정 완료");
             // 데이터셋 이터레이터 생성
             DataSetIterator iterator = new ListDataSetIterator<>(dataSetList, batchSize);
 
@@ -97,43 +85,42 @@ public class DeepLearningService {
                             .nOut(lstmLayerSize) // 출력 수 설정
                             .activation(Activation.TANH) // 활성화 함수로 하이퍼볼릭 탄젠트 함수 사용
                             .build())
+                    /*.layer(new LSTM.Builder() // 첫 번째 레이어 추가, LSTM 레이어
+                            .nIn(numInputs) // 입력 수 설정
+                            .nOut(lstmLayerSize) // 출력 수 설정
+                            .activation(Activation.TANH) // 활성화 함수로 하이퍼볼릭 탄젠트 함수 사용
+                            .build())*/
                     .layer(new RnnOutputLayer.Builder(LossFunctions.LossFunction.MSE)// 두 번째 레이어 추가, RNN 출력 레이어
                             .activation(Activation.IDENTITY)// 활성화 함수로 항등 사용
                             .nIn(lstmLayerSize)// 입력 수 설정
                             .nOut(numOutputs)// 출력 수 설정
                             .build())
                     .build();
+            MultiLayerNetwork net = new MultiLayerNetwork(conf);
             log.info("신경망 구성 설정 완료");
 
+            log.info("데이터 스케일링 시작...");
+            // 데이터 스케일링
             NormalizerMinMaxScaler scaler = new NormalizerMinMaxScaler();
             scaler.fit(iterator);
             iterator.setPreProcessor(scaler);
+            log.info("데이터 스케일링 완료");
 
-            MultiLayerNetwork net = new MultiLayerNetwork(conf);
-            net.init();
-
+            log.info("모델 학습 시작...");
             // 신경망 초기화 및 학습
-            log.info("신경망 초기화 및 학습 시작...");
-            net.setListeners(new ScoreIterationListener(1));
+            net.init();
+            net.fit(iterator, numEpochs);
+            log.info("모델 학습 완료!");
 
-            // EarlyStoppingTrainer 생성 및 학습
-            EarlyStoppingConfiguration<MultiLayerNetwork> esConf = new EarlyStoppingConfiguration.Builder<MultiLayerNetwork>()
-                    .epochTerminationConditions(new MaxEpochsTerminationCondition(numEpochs))
-                    .evaluateEveryNEpochs(1)
-                    .iterationTerminationConditions(new MaxScoreIterationTerminationCondition(5))
-                    .scoreCalculator(new DataSetLossCalculator(iterator, true))
-                    .modelSaver(new LocalFileModelSaver("./saved_model"))
-                    .build();
-            EarlyStoppingTrainer trainer = new EarlyStoppingTrainer(esConf, net, iterator);
+            //evaluateModel(iterator, numOutputs, net);
 
-            trainer.fit();
+            RegressionEvaluation eval = net.evaluateRegression(iterator);
+            log.info(eval.stats());
 
-            log.info("신경망 초기화 및 학습 완료");
-
-            evaluateModel(iterator, numOutputs, net);
-
+            log.info("모델 저장 시작...");
             File modelFile = new File("MTDMProvider.zip");
             ModelSerializer.writeModel(net, modelFile, true);
+            log.info("모델 저장 완료!");
         } catch (IOException e) {
             log.error("학습 중 파일 작성 오류", e);
         } catch (DataAccessException e) {
@@ -143,15 +130,78 @@ public class DeepLearningService {
         }
     }
 
-    // TimeStationPersonnel 객체에서 시간대별 인원 수를 가져와서 double 배열로 반환하는 메서드
-    public double[][][] getDataArray(TimeStationPersonnel data) {
-        return new double[][][] {
-                {{data.getSix()}}, {{data.getSeven()}}, {{data.getEight()}}, {{data.getNine()}}, {{data.getTen()}},
-                {{data.getEleven()}}, {{data.getTwelve()}}, {{data.getThirteen()}}, {{data.getFourteen()}}, {{data.getFifteen()}},
-                {{data.getSixteen()}}, {{data.getSeventeen()}}, {{data.getEighteen()}}, {{data.getNineteen()}}, {{data.getTwenty()}},
-                {{data.getTwentyOne()}}, {{data.getTwentyTwo()}}, {{data.getFromTwentyThreeToSixHour()}}
+    public double[] getDataArray(TimeStationPersonnel data) {
+        return new double[] {
+                data.getSix(), data.getSeven(), data.getEight(), data.getNine(), data.getTen(),
+                data.getEleven(), data.getTwelve(), data.getThirteen(), data.getFourteen(),
+                data.getFifteen(), data.getSixteen(), data.getSeventeen(), data.getEighteen(),
+                data.getNineteen(), data.getTwenty(), data.getTwentyOne(), data.getTwentyTwo(), data.getFromTwentyThreeToSixHour()
         };
+
     }
+
+    public Map<String, Map<String, Map<String, List<TimeStationPersonnel>>>> groupDataByStationDayLine(List<TimeStationPersonnel> dataList) {
+        Map<String, Map<String, Map<String, List<TimeStationPersonnel>>>> groupedData = new HashMap<>();
+
+        for (TimeStationPersonnel data : dataList) {
+            String recordDate = data.getRecordDate();
+            String station = data.getStation();
+            String line = data.getLine();
+
+            groupedData.putIfAbsent(recordDate, new HashMap<>());
+            groupedData.get(recordDate).putIfAbsent(station, new HashMap<>());
+            groupedData.get(recordDate).get(station).putIfAbsent(line, new ArrayList<>());
+            groupedData.get(recordDate).get(station).get(line).add(data);
+        }
+
+        return groupedData;
+    }
+
+    // 데이터셋 생성
+    public List<DataSet> createDataSet(Map<String, Map<String, Map<String, List<TimeStationPersonnel>>>> groupedData) {
+        List<DataSet> dataSetList = new ArrayList<>();
+
+        groupedData.values().parallelStream().forEach(dayEntry -> {
+            dayEntry.values().parallelStream().forEach(stationEntry -> {
+                stationEntry.values().parallelStream().forEach(lineData -> {
+                    double[][] inputArray = new double[lineData.size()][18];
+                    double[][] outputArray = new double[lineData.size()][18];
+
+                    IntStream.range(0, lineData.size()).parallel().forEach(i -> {
+                        TimeStationPersonnel data = lineData.get(i);
+                        log.info("데이터셋에 " + data.getRecordDate() + " "+ data.getStation() + " " + data.getLine() + "호선 데이터 삽입 중");
+
+                        // 입력 데이터 생성
+                        inputArray[i] = getDataArray(data);
+
+                        // 다음 날짜의 출력 데이터 조회
+                        LocalDate date = LocalDate.parse(data.getRecordDate());
+                        LocalDate nextDate = date.plusDays(1);
+                        String nextDateString = nextDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+                        TimeStationPersonnel output = timeStationPersonnelRepository.findLineAndStationAndRecordDate(data.getLine(), data.getStation(), nextDateString);
+
+                        // 출력 데이터 생성
+                        if(output == null) {
+                            log.info(data.getRecordDate() + " "+ data.getStation() + " " + data.getLine() + "호선 다음일 데이터 없음");
+                            outputArray[i] = new double[18];
+                            Arrays.fill(outputArray[i], 0.0);
+                        } else {
+                            outputArray[i] = getDataArray(output);
+                        }
+                    });
+
+                    // INDArray로 변환하여 데이터셋 생성
+                    INDArray input = Nd4j.create(inputArray);
+                    INDArray output = Nd4j.create(outputArray);
+
+                    dataSetList.add(new DataSet(input, output));
+                });
+            });
+        });
+
+        return dataSetList;
+    }
+
     public void predict(String targetLine, String targetStation, String targetDate) {
         // 저장된 모델 로드
         try {
@@ -164,13 +214,14 @@ public class DeepLearningService {
             MultiLayerNetwork net = ModelSerializer.restoreMultiLayerNetwork(modelFile);
             log.info("모델 로드 완료: {}", modelFile.getAbsolutePath());
 
-            TimeStationPersonnel previousData = timeStationPersonnelRepository.findGetLastRegistData(targetLine, targetStation, targetDate);
+            TimeStationPersonnel previousData = timeStationPersonnelRepository.findLineAndStationAndRecordDate(targetLine, targetStation, targetDate);
             if (previousData == null) {
                 log.error("이전 데이터를 찾을 수 없습니다.");
                 return;
             }
 
-            double[][][] inputArray = getDataArray(previousData);
+            // 입력 데이터 생성
+            double[] inputArray = getDataArray(previousData);
             INDArray input = Nd4j.create(inputArray);
 
             // 모델을 사용하여 다음 시간대의 데이터 예측
@@ -207,4 +258,49 @@ public class DeepLearningService {
             log.error("모델 성능 평가 중 오류 발생", e);
         }
     }
+
+    /*private double[] getDataArray(TimeStationPersonnel data) {
+        // 해당 객체에서 데이터 추출하여 배열로 반환
+        double[] dataArray = {
+                data.getSix(), data.getSeven(), data.getEight(), data.getNine(), data.getTen(),
+                data.getEleven(), data.getTwelve(), data.getThirteen(), data.getFourteen(),
+                data.getFifteen(), data.getSixteen(), data.getSeventeen(), data.getEighteen(),
+                data.getNineteen(), data.getTwenty(), data.getTwentyOne(), data.getTwentyTwo(), data.getFromTwentyThreeToSixHour(),
+                (double) data.getRecordDate().hashCode(), (double) data.getStation().hashCode(), (double) data.getLine().hashCode()
+        };
+        return dataArray;
+    }*/
+    /*public DataSet createDataSet(List<TimeStationPersonnel> timeStationPersonnelList) {
+        List<double[]> inputDataList = new ArrayList<>();
+        List<double[]> outputDataList = new ArrayList<>();
+
+        for (TimeStationPersonnel data : timeStationPersonnelList) {
+            double[] inputData = getDataArray(data);
+            inputDataList.add(inputData);
+
+            String nowDate = data.getRecordDate();
+            LocalDate date = LocalDate.parse(nowDate);
+            LocalDate nextDate = date.plusDays(1);
+            String nextDateString = nextDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+
+            TimeStationPersonnel output = timeStationPersonnelRepository.findLineAndStationAndRecordDate(data.getLine(), data.getStation(), nextDateString);
+            double[] outputData;
+            if(output == null) {
+                log.info(data.getRecordDate() + " "+ data.getStation() + " " + data.getLine() + "호선 다음일 데이터 없음");
+                outputData = new double[21];
+                Arrays.fill(outputData, 0.0);
+            } else {
+                outputData = getDataArray(output);
+            }
+
+            outputDataList.add(outputData);
+        }
+
+        INDArray input = Nd4j.create(inputDataList.toArray(new double[0][]));
+        INDArray output = Nd4j.create(outputDataList.toArray(new double[0][]));
+
+        DataSet dataSet = new DataSet(input, output);
+
+        return dataSet;
+    }*/
 }

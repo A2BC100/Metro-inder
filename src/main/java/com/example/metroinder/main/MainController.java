@@ -23,6 +23,7 @@ public class MainController {
         return "index";
     }
 
+
     @GetMapping("/dataSet")
     public void dateSet() {
         stationInformationSetService.peopleInformationBySeoulAtTimeSave("202312");
