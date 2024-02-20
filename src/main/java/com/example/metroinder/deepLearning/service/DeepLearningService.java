@@ -1,7 +1,7 @@
 package com.example.metroinder.deepLearning.service;
 
-import com.example.metroinder.dataSet.model.TimeStationPersonnel;
-import com.example.metroinder.dataSet.repository.TimeStationPersonnelRepository;
+import com.example.metroinder.dataSet.model.StationTraffic;
+import com.example.metroinder.dataSet.repository.StationTrafficRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.deeplearning4j.datasets.iterator.impl.ListDataSetIterator;
@@ -37,10 +37,10 @@ import java.util.stream.IntStream;
 @Service
 @RequiredArgsConstructor
 public class DeepLearningService {
-    private final TimeStationPersonnelRepository timeStationPersonnelRepository;
+    private final StationTrafficRepository stationTrafficRepository;
 
-    public List<TimeStationPersonnel> findAllByOrderByRecordDateDesc() {
-        return timeStationPersonnelRepository.findAllByOrderByRecordDateDesc();
+    public List<StationTraffic> findAllByOrderByRecordDateDesc() {
+        return stationTrafficRepository.findAllByOrderByRecordDateDesc();
     }
 
 
@@ -53,7 +53,7 @@ public class DeepLearningService {
             int lstmLayerSize = 50; // LSTM 레이어의 크기
             int numEpochs = 10; // 에폭
 
-            List<TimeStationPersonnel> dataList = findAllByOrderByRecordDateDesc();
+            List<StationTraffic> dataList = findAllByOrderByRecordDateDesc();
             if (dataList == null || dataList.isEmpty()) {
                 log.error("데이터를 가져오지 못했습니다.");
                 return;
@@ -61,7 +61,7 @@ public class DeepLearningService {
             log.info("데이터 로드 성공");
 
             // 각 역, 호선, 일 별로 데이터 그룹화
-            Map<String, Map<String, Map<String, List<TimeStationPersonnel>>>> groupedData = groupDataByStationDayLine(dataList);
+            Map<String, Map<String, Map<String, List<StationTraffic>>>> groupedData = groupDataByStationDayLine(dataList);
             log.info("데이터 그룹화 성공");
             // 데이터셋 생성
             List<DataSet> dataSetList = createDataSet(groupedData);
@@ -130,20 +130,20 @@ public class DeepLearningService {
         }
     }
 
-    public double[] getDataArray(TimeStationPersonnel data) {
+    public double[] getDataArray(StationTraffic data) {
         return new double[] {
                 data.getSix(), data.getSeven(), data.getEight(), data.getNine(), data.getTen(),
                 data.getEleven(), data.getTwelve(), data.getThirteen(), data.getFourteen(),
                 data.getFifteen(), data.getSixteen(), data.getSeventeen(), data.getEighteen(),
-                data.getNineteen(), data.getTwenty(), data.getTwentyOne(), data.getTwentyTwo(), data.getFromTwentyThreeToSixHour()
+                data.getNineteen(), data.getTwenty(), data.getTwentyone(), data.getTwentytwo(), data.getFromTwentythreeToSixHour()
         };
 
     }
 
-    public Map<String, Map<String, Map<String, List<TimeStationPersonnel>>>> groupDataByStationDayLine(List<TimeStationPersonnel> dataList) {
-        Map<String, Map<String, Map<String, List<TimeStationPersonnel>>>> groupedData = new HashMap<>();
+    public Map<String, Map<String, Map<String, List<StationTraffic>>>> groupDataByStationDayLine(List<StationTraffic> dataList) {
+        Map<String, Map<String, Map<String, List<StationTraffic>>>> groupedData = new HashMap<>();
 
-        for (TimeStationPersonnel data : dataList) {
+        for (StationTraffic data : dataList) {
             String recordDate = data.getRecordDate();
             String station = data.getStation();
             String line = data.getLine();
@@ -158,7 +158,7 @@ public class DeepLearningService {
     }
 
     // 데이터셋 생성
-    public List<DataSet> createDataSet(Map<String, Map<String, Map<String, List<TimeStationPersonnel>>>> groupedData) {
+    public List<DataSet> createDataSet(Map<String, Map<String, Map<String, List<StationTraffic>>>> groupedData) {
         List<DataSet> dataSetList = new ArrayList<>();
 
         groupedData.values().parallelStream().forEach(dayEntry -> {
@@ -168,7 +168,7 @@ public class DeepLearningService {
                     double[][] outputArray = new double[lineData.size()][18];
 
                     IntStream.range(0, lineData.size()).parallel().forEach(i -> {
-                        TimeStationPersonnel data = lineData.get(i);
+                        StationTraffic data = lineData.get(i);
                         log.info("데이터셋에 " + data.getRecordDate() + " "+ data.getStation() + " " + data.getLine() + "호선 데이터 삽입 중");
 
                         // 입력 데이터 생성
@@ -178,7 +178,7 @@ public class DeepLearningService {
                         LocalDate date = LocalDate.parse(data.getRecordDate());
                         LocalDate nextDate = date.plusDays(1);
                         String nextDateString = nextDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
-                        TimeStationPersonnel output = timeStationPersonnelRepository.findLineAndStationAndRecordDate(data.getLine(), data.getStation(), nextDateString);
+                        StationTraffic output = stationTrafficRepository.findLineAndStationAndRecordDate(data.getLine(), data.getStation(), nextDateString);
 
                         // 출력 데이터 생성
                         if(output == null) {
@@ -214,7 +214,7 @@ public class DeepLearningService {
             MultiLayerNetwork net = ModelSerializer.restoreMultiLayerNetwork(modelFile);
             log.info("모델 로드 완료: {}", modelFile.getAbsolutePath());
 
-            TimeStationPersonnel previousData = timeStationPersonnelRepository.findLineAndStationAndRecordDate(targetLine, targetStation, targetDate);
+            StationTraffic previousData = stationTrafficRepository.findLineAndStationAndRecordDate(targetLine, targetStation, targetDate);
             if (previousData == null) {
                 log.error("이전 데이터를 찾을 수 없습니다.");
                 return;
@@ -258,49 +258,4 @@ public class DeepLearningService {
             log.error("모델 성능 평가 중 오류 발생", e);
         }
     }
-
-    /*private double[] getDataArray(TimeStationPersonnel data) {
-        // 해당 객체에서 데이터 추출하여 배열로 반환
-        double[] dataArray = {
-                data.getSix(), data.getSeven(), data.getEight(), data.getNine(), data.getTen(),
-                data.getEleven(), data.getTwelve(), data.getThirteen(), data.getFourteen(),
-                data.getFifteen(), data.getSixteen(), data.getSeventeen(), data.getEighteen(),
-                data.getNineteen(), data.getTwenty(), data.getTwentyOne(), data.getTwentyTwo(), data.getFromTwentyThreeToSixHour(),
-                (double) data.getRecordDate().hashCode(), (double) data.getStation().hashCode(), (double) data.getLine().hashCode()
-        };
-        return dataArray;
-    }*/
-    /*public DataSet createDataSet(List<TimeStationPersonnel> timeStationPersonnelList) {
-        List<double[]> inputDataList = new ArrayList<>();
-        List<double[]> outputDataList = new ArrayList<>();
-
-        for (TimeStationPersonnel data : timeStationPersonnelList) {
-            double[] inputData = getDataArray(data);
-            inputDataList.add(inputData);
-
-            String nowDate = data.getRecordDate();
-            LocalDate date = LocalDate.parse(nowDate);
-            LocalDate nextDate = date.plusDays(1);
-            String nextDateString = nextDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
-
-            TimeStationPersonnel output = timeStationPersonnelRepository.findLineAndStationAndRecordDate(data.getLine(), data.getStation(), nextDateString);
-            double[] outputData;
-            if(output == null) {
-                log.info(data.getRecordDate() + " "+ data.getStation() + " " + data.getLine() + "호선 다음일 데이터 없음");
-                outputData = new double[21];
-                Arrays.fill(outputData, 0.0);
-            } else {
-                outputData = getDataArray(output);
-            }
-
-            outputDataList.add(outputData);
-        }
-
-        INDArray input = Nd4j.create(inputDataList.toArray(new double[0][]));
-        INDArray output = Nd4j.create(outputDataList.toArray(new double[0][]));
-
-        DataSet dataSet = new DataSet(input, output);
-
-        return dataSet;
-    }*/
 }

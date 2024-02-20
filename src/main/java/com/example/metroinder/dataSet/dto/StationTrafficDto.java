@@ -1,17 +1,13 @@
 package com.example.metroinder.dataSet.dto;
 
 
-import com.example.metroinder.dataSet.model.TimeStationPersonnel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.util.ArrayList;
-import java.util.List;
-
 @Getter
 @NoArgsConstructor
-public class TimeStationPersonnelDto {
+public class StationTrafficDto {
     private Long congestionId;
     private String station;
     private String line;
@@ -31,13 +27,13 @@ public class TimeStationPersonnelDto {
     private int eighteen;
     private int nineteen;
     private int twenty;
-    private int twentyOne;
-    private int twentyTwo;
-    private int fromTwentyThreeToSixHour;
+    private int twentyone;
+    private int twentytwo;
+    private int fromTwentythreeToSixHour;
     private String recordDate;
 
     @Builder
-    public TimeStationPersonnelDto(Long congestionId, String station, String line, int stationNumber, int six, int seven, int eight, int nine, int ten, int eleven, int twelve, int thirteen, int fourteen, int fifteen, int sixteen, int seventeen, int eighteen, int nineteen, int twenty, int twentyOne, int twentyTwo, int fromTwentyThreeToSixHour, String recordDate) {
+    public StationTrafficDto(Long congestionId, String station, String line, int stationNumber, int six, int seven, int eight, int nine, int ten, int eleven, int twelve, int thirteen, int fourteen, int fifteen, int sixteen, int seventeen, int eighteen, int nineteen, int twenty, int twentyone, int twentytwo, int fromTwentythreeToSixHour, String recordDate) {
         this.congestionId = congestionId;
         this.station = station;
         this.line = line;
@@ -57,9 +53,9 @@ public class TimeStationPersonnelDto {
         this.eighteen = eighteen;
         this.nineteen = nineteen;
         this.twenty = twenty;
-        this.twentyOne = twentyOne;
-        this.twentyTwo = twentyTwo;
-        this.fromTwentyThreeToSixHour = fromTwentyThreeToSixHour;
+        this.twentyone = twentyone;
+        this.twentytwo = twentytwo;
+        this.fromTwentythreeToSixHour = fromTwentythreeToSixHour;
         this.recordDate = recordDate;
     }
 }

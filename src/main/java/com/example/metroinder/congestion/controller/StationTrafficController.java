@@ -1,5 +1,5 @@
 package com.example.metroinder.congestion.controller;
-import com.example.metroinder.congestion.service.TimeStationPersonnelService;
+import com.example.metroinder.congestion.service.StationTrafficService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -13,13 +13,13 @@ import java.util.Map;
 @Slf4j
 @Controller
 @AllArgsConstructor
-public class TimeStationPersonnelController {
-    private final TimeStationPersonnelService timeStationPersonnelService;
+public class StationTrafficController {
+    private final StationTrafficService stationTrafficService;
 
     @GetMapping("/returnPeopleCount")
     @ResponseBody
     public ResponseEntity<Object> returnPeopleCount(@RequestParam("stationName") String stationName) {
-        Map<String, Object> json = timeStationPersonnelService.findSameStationPeople(stationName);
+        Map<String, Object> json = stationTrafficService.findSameStationPeople(stationName);
         return new ResponseEntity<>(json, HttpStatus.OK);
     }
 

@@ -10,7 +10,7 @@ import java.util.Map;
 
 @RequiredArgsConstructor
 @Service
-public class TimeStationPersonnelService {
+public class StationTrafficService {
 
     private final CapitalareaStationRepository capitalareaStationRepository;
     private final StationLineRepository stationLineRepository;

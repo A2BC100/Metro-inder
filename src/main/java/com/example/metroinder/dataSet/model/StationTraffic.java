@@ -15,7 +15,7 @@ import javax.persistence.Id;
 @Getter
 @Setter
 @Builder
-public class TimeStationPersonnel extends Timestamped {
+public class StationTraffic extends Timestamped {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long congestionId; // primary key
@@ -54,14 +54,14 @@ public class TimeStationPersonnel extends Timestamped {
     @ColumnDefault("0")
     private int twenty;
     @ColumnDefault("0")
-    private int twentyOne;
+    private int twentyone;
     @ColumnDefault("0")
-    private int twentyTwo;
+    private int twentytwo;
     @ColumnDefault("0")
-    private int fromTwentyThreeToSixHour;
+    private int fromTwentythreeToSixHour;
     private String recordDate; // 승하차 일자
     @Builder
-    public TimeStationPersonnel(Long congestionId, String station, String line, int stationNumber, int six, int seven, int eight, int nine, int ten, int eleven, int twelve, int thirteen, int fourteen, int fifteen, int sixteen, int seventeen, int eighteen, int nineteen, int twenty, int twentyOne, int twentyTwo, int fromTwentyThreeToSixHour, String recordDate) {
+    public StationTraffic(Long congestionId, String station, String line, int stationNumber, int six, int seven, int eight, int nine, int ten, int eleven, int twelve, int thirteen, int fourteen, int fifteen, int sixteen, int seventeen, int eighteen, int nineteen, int twenty, int twentyone, int twentytwo, int fromTwentythreeToSixHour, String recordDate) {
         this.congestionId = congestionId;
         this.station = station;
         this.line = line;
@@ -81,9 +81,9 @@ public class TimeStationPersonnel extends Timestamped {
         this.eighteen = eighteen;
         this.nineteen = nineteen;
         this.twenty = twenty;
-        this.twentyOne = twentyOne;
-        this.twentyTwo = twentyTwo;
-        this.fromTwentyThreeToSixHour = fromTwentyThreeToSixHour;
+        this.twentyone = twentyone;
+        this.twentytwo = twentytwo;
+        this.fromTwentythreeToSixHour = fromTwentythreeToSixHour;
         this.recordDate = recordDate;
     }
 }

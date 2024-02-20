@@ -4,7 +4,6 @@ package com.example.metroinder.dataSet.service;
 import com.example.metroinder.dataSet.dto.CapitalareaStationDto;
 import com.example.metroinder.dataSet.dto.LineDto;
 import com.example.metroinder.dataSet.dto.StationLineDto;
-import com.example.metroinder.dataSet.dto.TimeStationPersonnelDto;
 import com.example.metroinder.dataSet.model.*;
 import com.example.metroinder.dataSet.repository.*;
 import com.example.metroinder.stationSchedule.dto.StationScheduleDto;
@@ -44,7 +43,7 @@ public class StationInformationSetService {
     private final CapitalareaStationRepository capitalareaStationRepository;
     private final LineRepository lineRepository;
     private final StationLineRepository stationLineRepository;
-    private final TimeStationPersonnelRepository timeStationPersonnelRepository;
+    private final StationTrafficRepository stationTrafficRepository;
     private final StationScheduleRepository stationScheduleRepository;
     private String defaultEncodeing = "UTF-8";
     
@@ -115,7 +114,7 @@ public class StationInformationSetService {
             }
 
             return;
-            /*List<TimeStationPersonnelDto> jsonSameStationDtoList = new ArrayList<>();
+            /*List<stationTrafficDto> jsonSameStationDtoList = new ArrayList<>();
             for (int count = 0; count < jsonArr.size(); count++) {
                 JSONObject row = (JSONObject) jsonArr.get(count);
                 String recordDate = (String) row.get("USE_MON");
@@ -229,7 +228,7 @@ public class StationInformationSetService {
                 if(-1 == station.indexOf("역")) {
                     station = "서울";
                 }
-                TimeStationPersonnelDto timeStationPersonnelDto = TimeStationPersonnelDto.builder()
+                stationTrafficDto stationTrafficDto = stationTrafficDto.builder()
                         .station(station)
                         .line(stnLine)
                         .six((int) Math.round((double) row.get("SIX_RIDE_NUM") + (double) row.get("SIX_ALIGHT_NUM")))
@@ -252,7 +251,7 @@ public class StationInformationSetService {
                         .fromTwentyThreeToSixHour((int) Math.round((double) row.get("TWENTY_THREE_RIDE_NUM") + (double) row.get("TWENTY_THREE_ALIGHT_NUM")))
                         .recordDate(recordDate)
                         .build();
-                jsonSameStationDtoList.add(timeStationPersonnelDto);
+                jsonSameStationDtoList.add(stationTrafficDto);
                 // 특정 역들 중에 2개의 호선이 동시에 지나가는 경우, 다른 호선의 승하차 인원 데이터를 복사해서 DB에 집어넣음
                 if(station.equals("구로") || station.equals("금정") || station.equals("병점") || station.equals("성수") || station.equals("신도림") || station.equals("까치산") || station.equals("총신대입구") || station.equals("한대앞") || station.equals("중앙") || station.equals("고잔") || station.equals("초지") || station.equals("안산") || station.equals("신길온천") || station.equals("정왕") || station.equals("오이도") || station.equals("강동")) {
                     if(station.equals("구로") && stnLine.equals("경부1호선")) {
@@ -274,7 +273,7 @@ public class StationInformationSetService {
                     } else if(station.equals("강동")) {
                         stnLine = "마천지선";
                     }
-                    timeStationPersonnelDto = TimeStationPersonnelDto.builder()
+                    stationTrafficDto = stationTrafficDto.builder()
                             .station(station)
                             .line(stnLine)
                             .six((int) Math.round((double) row.get("SIX_RIDE_NUM") + (double) row.get("SIX_ALIGHT_NUM")))
@@ -297,13 +296,13 @@ public class StationInformationSetService {
                             .fromTwentyThreeToSixHour((int) Math.round((double) row.get("TWENTY_THREE_RIDE_NUM") + (double) row.get("TWENTY_THREE_ALIGHT_NUM")))
                             .recordDate(recordDate)
                             .build();
-                    jsonSameStationDtoList.add(timeStationPersonnelDto);
+                    jsonSameStationDtoList.add(stationTrafficDto);
                 }
             }
-            TimeStationPersonnelDto timeStationPersonnelDto = new TimeStationPersonnelDto();
-            List<TimeStationPersonnel> jsonSameStationList = timeStationPersonnelDto.toEntityList(jsonSameStationDtoList);
-            for (TimeStationPersonnel timeStationPersonnel : jsonSameStationList) {
-                timeStationPersonnelRepository.save(timeStationPersonnel);
+            stationTrafficDto stationTrafficDto = new stationTrafficDto();
+            List<stationTraffic> jsonSameStationList = stationTrafficDto.toEntityList(jsonSameStationDtoList);
+            for (stationTraffic stationTraffic : jsonSameStationList) {
+                stationTrafficRepository.save(stationTraffic);
             }*/
         } catch (Exception e) {
             e.printStackTrace();
@@ -414,7 +413,7 @@ public class StationInformationSetService {
             String stationName = stationLine.getCapitalareaStation().getStation();
             String lineName = stationLine.getLine().getLine();
 
-            TimeStationPersonnelRepository.SameStationPeople sameStationPeople = timeStationPersonnelRepository.stationDegreeOfCongestion(count, stationName, lineName);
+            StationTrafficRepository.SameStationPeople sameStationPeople = stationTrafficRepository.stationDegreeOfCongestion(count, stationName, lineName);
             if(sameStationPeople == null) {
                 continue;
             }
@@ -700,8 +699,8 @@ public class StationInformationSetService {
 
     public void excelCongetionDataSave(String url) {
         try {
-            //List<TimeStationPersonnelDto> readCsvRide = new ArrayList<>();
-            //List<TimeStationPersonnelDto> readCsvAlight = new ArrayList<>();
+            //List<stationTrafficDto> readCsvRide = new ArrayList<>();
+            //List<stationTrafficDto> readCsvAlight = new ArrayList<>();
             BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(new FileInputStream(url), "EUC-KR"));
             if(bufferedReader == null) {
                 log.info("파일명에 해당하는 파일이 없습니다.");
@@ -720,7 +719,7 @@ public class StationInformationSetService {
                 String line = lineContents[1];
                 String stationNumber = lineContents[2];
                 if(line == null || "".equals(line)) {
-                    line = timeStationPersonnelRepository.findLineDate(Integer.parseInt(stationNumber));
+                    line = stationTrafficRepository.findLineDate(Integer.parseInt(stationNumber));
                 }
                 String station = lineContents[3];
                 //String lineGbn = lineContents[3];
@@ -742,7 +741,7 @@ public class StationInformationSetService {
                 String twentyOne = lineContents[19];
                 String twentyTwo = lineContents[20];
                 String fromTwentyThreeToSixHour = lineContents[21];
-                TimeStationPersonnel timeStationPersonnel = TimeStationPersonnel.builder()
+                StationTraffic stationTraffic = StationTraffic.builder()
                         .station(station)
                         .recordDate(recordDate)
                         .line(line)
@@ -762,28 +761,28 @@ public class StationInformationSetService {
                         .eighteen(Integer.parseInt(eighteen.replace(" ", "")))
                         .nineteen(Integer.parseInt(nineteen.replace(" ", "")))
                         .twenty(Integer.parseInt(twenty.replace(" ", "")))
-                        .twentyOne(Integer.parseInt(twentyOne.replace(" ", "")))
-                        .twentyTwo(Integer.parseInt(twentyTwo.replace(" ", "")))
-                        .fromTwentyThreeToSixHour(Integer.parseInt(fromTwentyThreeToSixHour.replace(" ", "")))
+                        .twentyone(Integer.parseInt(twentyOne.replace(" ", "")))
+                        .twentytwo(Integer.parseInt(twentyTwo.replace(" ", "")))
+                        .fromTwentythreeToSixHour(Integer.parseInt(fromTwentyThreeToSixHour.replace(" ", "")))
                         .build();
                 /*if("승차".equals(rideGbn))
-                    readCsvRide.add(timeStationPersonnelDto);
+                    readCsvRide.add(stationTrafficDto);
                 else if("하차".equals(rideGbn))
-                    readCsvAlight.add(timeStationPersonnelDto);
+                    readCsvAlight.add(stationTrafficDto);
                 else {
                     log.info("승하차 구분 데이터에 문제가 있습니다. 승하차 구분 : " + rideGbn);
                     return;
                 }*/
-                timeStationPersonnelRepository.save(timeStationPersonnel);
+                stationTrafficRepository.save(stationTraffic);
             }
             log.info("저장완료");
             //int count = 0;
-            /*for(TimeStationPersonnelDto rideDto : readCsvRide) {
+            /*for(stationTrafficDto rideDto : readCsvRide) {
                 boolean flag = false;
-                for(TimeStationPersonnelDto alightDto : readCsvAlight) {
+                for(stationTrafficDto alightDto : readCsvAlight) {
                     if (rideDto.getRecordDate().equals(alightDto.getRecordDate()) && rideDto.getStationNumber() == alightDto.getStationNumber()) {
                         count++;
-                        TimeStationPersonnel timeStationPersonnel = TimeStationPersonnel.builder()
+                        stationTraffic stationTraffic = stationTraffic.builder()
                                 .station(alightDto.getStation())
                                 .recordDate(alightDto.getRecordDate())
                                 .line(alightDto.getLine())
@@ -807,7 +806,7 @@ public class StationInformationSetService {
                                 .twentyTwo(rideDto.getTwentyTwo() + alightDto.getTwentyTwo())
                                 .fromTwentyThreeToSixHour(rideDto.getFromTwentyThreeToSixHour() + alightDto.getFromTwentyThreeToSixHour())
                                 .build();
-                        timeStationPersonnelRepository.save(timeStationPersonnel);
+                        stationTrafficRepository.save(stationTraffic);
                         log.info("데이터 저장 중 : " + count);
                         flag = true;
                         break;
