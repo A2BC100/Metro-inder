@@ -4,7 +4,7 @@ import com.example.metroinder.dataSet.model.StationTraffic;
 import com.example.metroinder.dataSet.repository.StationTrafficRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.deeplearning4j.datasets.iterator.impl.ListDataSetIterator;
+import org.deeplearning4j.datasets.iterator.utilty.ListDataSetIterator;
 import org.deeplearning4j.nn.api.OptimizationAlgorithm;
 import org.deeplearning4j.nn.conf.GradientNormalization;
 import org.deeplearning4j.nn.conf.MultiLayerConfiguration;
@@ -14,13 +14,14 @@ import org.deeplearning4j.nn.conf.layers.RnnOutputLayer;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import org.deeplearning4j.nn.weights.WeightInit;
 import org.deeplearning4j.util.ModelSerializer;
-import org.nd4j.evaluation.classification.Evaluation;
 import org.nd4j.evaluation.regression.RegressionEvaluation;
 import org.nd4j.linalg.activations.Activation;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.DataSet;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
+import org.nd4j.linalg.dataset.api.preprocessor.DataNormalization;
 import org.nd4j.linalg.dataset.api.preprocessor.NormalizerMinMaxScaler;
+import org.nd4j.linalg.dataset.api.preprocessor.NormalizerStandardize;
 import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.learning.config.Adam;
 import org.nd4j.linalg.lossfunctions.LossFunctions;
@@ -47,7 +48,7 @@ public class DeepLearningService {
     public void trainModel() {
         try {
             // 하이퍼파라미터 설정
-            int batchSize = 32; // 배치 크기 32설정, 복잡한 데이터이기 때문에 배치가 낮을 수록 좋으나 속도 이슈로 일단 32설정, 배치 1
+            int batchSize = 1; // 배치 크기 32설정, 복잡한 데이터이기 때문에 배치가 낮을 수록 좋음. 일단 1로 설정.
             int numInputs = 18; // 시간대별 데이터 크기
             int numOutputs = 1; // 예제에서는 출력을 사용하지 않음
             int lstmLayerSize = 50; // LSTM 레이어의 크기
@@ -100,10 +101,14 @@ public class DeepLearningService {
             log.info("신경망 구성 설정 완료");
 
             log.info("데이터 스케일링 시작...");
-            // 데이터 스케일링
-            NormalizerMinMaxScaler scaler = new NormalizerMinMaxScaler();
+            // 데이터 스케일링 현재 StandardScaler
+            DataNormalization normalizer = new NormalizerStandardize();
+            normalizer.fit(iterator);
+            iterator.setPreProcessor(normalizer);
+            // MinMaxScaler 주석처리
+            /*NormalizerMinMaxScaler scaler = new NormalizerMinMaxScaler();
             scaler.fit(iterator);
-            iterator.setPreProcessor(scaler);
+            iterator.setPreProcessor(scaler);*/
             log.info("데이터 스케일링 완료");
 
             log.info("모델 학습 시작...");
@@ -160,16 +165,18 @@ public class DeepLearningService {
     // 데이터셋 생성
     public List<DataSet> createDataSet(Map<String, Map<String, Map<String, List<StationTraffic>>>> groupedData) {
         List<DataSet> dataSetList = new ArrayList<>();
+        List<String> dataNonList = new ArrayList<>();
+        // 일별, 역별, 호선별로 병렬 처리
+        groupedData.entrySet().parallelStream().forEach(dayEntry -> {
+            dayEntry.getValue().entrySet().parallelStream().forEach(stationEntry -> {
+                stationEntry.getValue().entrySet().parallelStream().forEach(lineData -> {
+                    List<StationTraffic> lineDataList = lineData.getValue();
+                    double[][] inputArray = new double[lineDataList.size()][18];
+                    double[][] outputArray = new double[lineDataList.size()][18];
 
-        groupedData.values().parallelStream().forEach(dayEntry -> {
-            dayEntry.values().parallelStream().forEach(stationEntry -> {
-                stationEntry.values().parallelStream().forEach(lineData -> {
-                    double[][] inputArray = new double[lineData.size()][18];
-                    double[][] outputArray = new double[lineData.size()][18];
-
-                    IntStream.range(0, lineData.size()).parallel().forEach(i -> {
-                        StationTraffic data = lineData.get(i);
-                        log.info("데이터셋에 " + data.getRecordDate() + " "+ data.getStation() + " " + data.getLine() + "호선 데이터 삽입 중");
+                    IntStream.range(0, lineDataList.size()).parallel().forEach(i -> {
+                        StationTraffic data = lineDataList.get(i);
+                        log.info("데이터셋에 " + data.getRecordDate() + " " + data.getStation() + " " + data.getLine() + "호선 데이터 삽입 중");
 
                         // 입력 데이터 생성
                         inputArray[i] = getDataArray(data);
@@ -181,8 +188,8 @@ public class DeepLearningService {
                         StationTraffic output = stationTrafficRepository.findLineAndStationAndRecordDate(data.getLine(), data.getStation(), nextDateString);
 
                         // 출력 데이터 생성
-                        if(output == null) {
-                            log.info(data.getRecordDate() + " "+ data.getStation() + " " + data.getLine() + "호선 다음일 데이터 없음");
+                        if (output == null) {
+                            dataNonList.add(data.getRecordDate() + " " + data.getStation() + " " + data.getLine());
                             outputArray[i] = new double[18];
                             Arrays.fill(outputArray[i], 0.0);
                         } else {
@@ -198,6 +205,10 @@ public class DeepLearningService {
                 });
             });
         });
+
+        for(String noneData : dataNonList) {
+            log.info(noneData);
+        }
 
         return dataSetList;
     }
@@ -232,26 +243,28 @@ public class DeepLearningService {
             log.error("모델 로드 중 오류 발생", e);
         }
     }
+
     public void evaluateModel(DataSetIterator iterator, int numOutputs, MultiLayerNetwork net) {
         try {
             log.info("모델 성능 평가 시작...");
 
-            // 모델의 예측 정확도 계산
-            Evaluation evaluation = new Evaluation(numOutputs);
+            // RegressionEvaluation 객체 생성
+            RegressionEvaluation eval = new RegressionEvaluation();
+
+            // 데이터셋 이터레이터를 사용하여 모델 예측 및 평가
             while (iterator.hasNext()) {
                 DataSet testData = iterator.next();
                 INDArray features = testData.getFeatures();
                 INDArray labels = testData.getLabels();
                 INDArray predicted = net.output(features, false);
-                evaluation.eval(labels, predicted);
+                eval.eval(labels, predicted); // 각 데이터셋에 대해 평가 수행
             }
 
-            // 평가 지표 출력
+            // 평가 결과 출력
             log.info("평가 지표:");
-            log.info("정확도: {}", evaluation.accuracy());
-            log.info("정밀도: {}", evaluation.precision());
-            log.info("재현율: {}", evaluation.recall());
-            log.info("F1 점수: {}", evaluation.f1());
+            log.info("평균 제곱 오차 (MSE): {}", eval.meanSquaredError(numOutputs)); // MSE가 작을 수록 예측이 정확함
+            log.info("평균 절대 오차 (MAE): {}", eval.meanAbsoluteError(numOutputs)); // 예측값과 실제값의 차이의 절대값의 평균
+            log.info("결정 계수 (R^2): {}", eval.rSquared(numOutputs)); // 회귀 모델 적합도
 
             log.info("모델 성능 평가 완료");
         } catch (Exception e) {

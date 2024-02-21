@@ -39,10 +39,10 @@ dependencies {
 	implementation group: 'io.jsonwebtoken', name: 'jjwt-api', version: '0.11.5'
 	implementation group: 'io.jsonwebtoken', name: 'jjwt-impl', version: '0.11.5'
 	implementation group: 'io.jsonwebtoken', name: 'jjwt-jackson', version: '0.11.5'
-	implementation 'org.nd4j:nd4j-native-platform:1.0.0-beta7' // ND4J 라이브러리
-	implementation 'org.deeplearning4j:deeplearning4j-core:1.0.0-beta7' // DL4J 라이브러리
-	implementation 'org.datavec:datavec-api:1.0.0-beta7' // DataVec 라이브러리
-	implementation 'org.datavec:datavec-local:1.0.0-beta7' // DataVec 로컬 라이브러리
+	implementation 'org.nd4j:nd4j-native-platform:1.0.0-M2.1' // ND4J 라이브러리
+	implementation 'org.deeplearning4j:deeplearning4j-core:1.0.0-M2.1' // DL4J 라이브러리
+	implementation 'org.datavec:datavec-api:1.0.0-M2.1' // DataVec 라이브러리
+	implementation 'org.datavec:datavec-local:1.0.0-M2.1' // DataVec 로컬 라이브러리
 }
 
 tasks.named('test') {

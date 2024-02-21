@@ -26,8 +26,12 @@ public class MainController {
 
     @GetMapping("/dataSet")
     public void dateSet() {
-        stationInformationSetService.peopleInformationBySeoulAtTimeSave("202312");
-        //stationInformationSetService.excelCongetionDataSave("C:\\Users\\iway\\Downloads\\2020~20231031.csv");
+        //stationInformationSetService.peopleInformationBySeoulAtTimeSave("202312");
+        //stationInformationSetService.excelCongetionDataSave("C:\\Users\\iway\\Downloads\\2015~2023.csv"); // 엑셀 파일 일반 저장
+        stationInformationSetService.excelCongetionDataParallelizationSave("C:\\Users\\iway\\Downloads\\2015~2023.csv"); // 엑셀 파일 병렬화 저장
+        /*병렬화 저장 시에 코드 실행이 금방 끝나지만 jpa는 쿼리를 db에 보내주는거지 intellij에서 저장하는게 아님.
+          엄청난 속도로 쿼리를 DB에 보내진 상태고 저장은 되는데 시간이 걸림.
+         */
     }
 
     /*@GetMapping("/test")

@@ -4,6 +4,7 @@ package com.example.metroinder.dataSet.service;
 import com.example.metroinder.dataSet.dto.CapitalareaStationDto;
 import com.example.metroinder.dataSet.dto.LineDto;
 import com.example.metroinder.dataSet.dto.StationLineDto;
+import com.example.metroinder.dataSet.dto.StationTrafficDto;
 import com.example.metroinder.dataSet.model.*;
 import com.example.metroinder.dataSet.repository.*;
 import com.example.metroinder.stationSchedule.dto.StationScheduleDto;
@@ -23,10 +24,9 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -667,11 +667,14 @@ public class StationInformationSetService {
                     stationScheduleDtoList.add(stationScheduleDto);
                 }
             }
+            log.info("엑셀 파일 읽기 완료");
             StationScheduleDto stationScheduleDto = new StationScheduleDto();
             List<StationSchedule> stationScheduleList = stationScheduleDto.toEntityList(stationScheduleDtoList);
             for (StationSchedule stationSchedule : stationScheduleList) {
+                log.info("데이터 저장 중...");
                 stationScheduleRepository.save(stationSchedule);
             }
+            log.info("데이터 저장 완료");
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -699,8 +702,6 @@ public class StationInformationSetService {
 
     public void excelCongetionDataSave(String url) {
         try {
-            //List<stationTrafficDto> readCsvRide = new ArrayList<>();
-            //List<stationTrafficDto> readCsvAlight = new ArrayList<>();
             BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(new FileInputStream(url), "EUC-KR"));
             if(bufferedReader == null) {
                 log.info("파일명에 해당하는 파일이 없습니다.");
@@ -708,10 +709,11 @@ public class StationInformationSetService {
             }
             String csvLine = null;
             log.info("저장시작");
+
             while((csvLine = bufferedReader.readLine())!=null) {
                 log.info("CSV 파일 읽는 중...");
                 String[] lineContents = csvLine.split(",(?=([^\"]*\"[^\"]*\")*[^\"]*$)",-1);
-                if(lineContents.length != 23) {
+                if(lineContents.length != 22) {
                     log.info("excel 양식이 잘못되어있습니다.");
                     return;
                 }
@@ -722,7 +724,6 @@ public class StationInformationSetService {
                     line = stationTrafficRepository.findLineDate(Integer.parseInt(stationNumber));
                 }
                 String station = lineContents[3];
-                //String lineGbn = lineContents[3];
                 String six = lineContents[4];
                 String seven = lineContents[5];
                 String eight = lineContents[6];
@@ -738,9 +739,10 @@ public class StationInformationSetService {
                 String eighteen = lineContents[16];
                 String nineteen = lineContents[17];
                 String twenty = lineContents[18];
-                String twentyOne = lineContents[19];
-                String twentyTwo = lineContents[20];
-                String fromTwentyThreeToSixHour = lineContents[21];
+                String twentyone = lineContents[19];
+                String twentytwo = lineContents[20];
+                String fromTwentythreeToSixHour = lineContents[21];
+
                 StationTraffic stationTraffic = StationTraffic.builder()
                         .station(station)
                         .recordDate(recordDate)
@@ -761,62 +763,114 @@ public class StationInformationSetService {
                         .eighteen(Integer.parseInt(eighteen.replace(" ", "")))
                         .nineteen(Integer.parseInt(nineteen.replace(" ", "")))
                         .twenty(Integer.parseInt(twenty.replace(" ", "")))
-                        .twentyone(Integer.parseInt(twentyOne.replace(" ", "")))
-                        .twentytwo(Integer.parseInt(twentyTwo.replace(" ", "")))
-                        .fromTwentythreeToSixHour(Integer.parseInt(fromTwentyThreeToSixHour.replace(" ", "")))
+                        .twentyone(Integer.parseInt(twentyone.replace(" ", "")))
+                        .twentytwo(Integer.parseInt(twentytwo.replace(" ", "")))
+                        .fromTwentythreeToSixHour(Integer.parseInt(fromTwentythreeToSixHour.replace(" ", "")))
                         .build();
-                /*if("승차".equals(rideGbn))
-                    readCsvRide.add(stationTrafficDto);
-                else if("하차".equals(rideGbn))
-                    readCsvAlight.add(stationTrafficDto);
-                else {
-                    log.info("승하차 구분 데이터에 문제가 있습니다. 승하차 구분 : " + rideGbn);
-                    return;
-                }*/
                 stationTrafficRepository.save(stationTraffic);
+
             }
-            log.info("저장완료");
-            //int count = 0;
-            /*for(stationTrafficDto rideDto : readCsvRide) {
-                boolean flag = false;
-                for(stationTrafficDto alightDto : readCsvAlight) {
-                    if (rideDto.getRecordDate().equals(alightDto.getRecordDate()) && rideDto.getStationNumber() == alightDto.getStationNumber()) {
-                        count++;
-                        stationTraffic stationTraffic = stationTraffic.builder()
-                                .station(alightDto.getStation())
-                                .recordDate(alightDto.getRecordDate())
-                                .line(alightDto.getLine())
-                                .stationNumber(alightDto.getStationNumber())
-                                .six(rideDto.getSix() + alightDto.getSix())
-                                .seven(rideDto.getSeven() + alightDto.getSeven())
-                                .eight(rideDto.getEight() + alightDto.getEight())
-                                .nine(rideDto.getNine() + alightDto.getNine())
-                                .ten(rideDto.getTen() + alightDto.getTen())
-                                .eleven(rideDto.getEleven() + alightDto.getEleven())
-                                .twelve(rideDto.getTwelve() + alightDto.getTwelve())
-                                .thirteen(rideDto.getThirteen() + alightDto.getThirteen())
-                                .fourteen(rideDto.getFourteen() + alightDto.getFourteen())
-                                .fifteen(rideDto.getFifteen() + alightDto.getFifteen())
-                                .sixteen(rideDto.getSixteen() + alightDto.getSixteen())
-                                .seventeen(rideDto.getSeventeen() + alightDto.getSeventeen())
-                                .eighteen(rideDto.getEighteen()+ alightDto.getEighteen())
-                                .nineteen(rideDto.getNineteen() + alightDto.getNineteen())
-                                .twenty(rideDto.getTwenty() + alightDto.getTwenty())
-                                .twentyOne(rideDto.getTwentyOne() + alightDto.getTwentyOne())
-                                .twentyTwo(rideDto.getTwentyTwo() + alightDto.getTwentyTwo())
-                                .fromTwentyThreeToSixHour(rideDto.getFromTwentyThreeToSixHour() + alightDto.getFromTwentyThreeToSixHour())
-                                .build();
-                        stationTrafficRepository.save(stationTraffic);
-                        log.info("데이터 저장 중 : " + count);
-                        flag = true;
-                        break;
-                    }
+
+            bufferedReader.close();
+
+
+        }catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void excelCongetionDataParallelizationSave(String url) {
+        try {
+            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(new FileInputStream(url), "EUC-KR"));
+            if(bufferedReader == null) {
+                log.info("파일명에 해당하는 파일이 없습니다.");
+                return;
+            }
+            String csvLine = null;
+            log.info("저장시작");
+
+            List<StationTraffic> stationTrafficList = new ArrayList<>();
+
+            int count = 0;
+            while((csvLine = bufferedReader.readLine())!=null) {
+                count++;
+                log.info("CSV 파일 읽는 중...");
+                String[] lineContents = csvLine.split(",(?=([^\"]*\"[^\"]*\")*[^\"]*$)",-1);
+                if(lineContents.length != 22) {
+                    log.info("excel 양식이 잘못되어있습니다.");
+                    return;
                 }
-                if (flag) {
-                    continue;
+                String recordDate = lineContents[0];
+                String line = lineContents[1];
+                String stationNumber = lineContents[2];
+                if(line == null || "".equals(line)) {
+                    line = stationTrafficRepository.findLineDate(Integer.parseInt(stationNumber));
                 }
-            }*/
-            log.info("데이터 저장 완료..!");
+                String station = lineContents[3];
+                String six = lineContents[4];
+                String seven = lineContents[5];
+                String eight = lineContents[6];
+                String nine = lineContents[7];
+                String ten = lineContents[8];
+                String eleven = lineContents[9];
+                String twelve = lineContents[10];
+                String thirteen = lineContents[11];
+                String fourteen = lineContents[12];
+                String fifteen = lineContents[13];
+                String sixteen = lineContents[14];
+                String seventeen = lineContents[15];
+                String eighteen = lineContents[16];
+                String nineteen = lineContents[17];
+                String twenty = lineContents[18];
+                String twentyone = lineContents[19];
+                String twentytwo = lineContents[20];
+                String fromTwentythreeToSixHour = lineContents[21];
+
+                StationTraffic stationTraffic = StationTraffic.builder()
+                        .station(station)
+                        .recordDate(recordDate)
+                        .line(line)
+                        .stationNumber(Integer.parseInt(stationNumber))
+                        .six(Integer.parseInt(six.replace(" ", "")))
+                        .seven(Integer.parseInt(seven.replace(" ", "")))
+                        .eight(Integer.parseInt(eight.replace(" ", "")))
+                        .nine(Integer.parseInt(nine.replace(" ", "")))
+                        .ten(Integer.parseInt(ten.replace(" ", "")))
+                        .eleven(Integer.parseInt(eleven.replace(" ", "")))
+                        .twelve(Integer.parseInt(twelve.replace(" ", "")))
+                        .thirteen(Integer.parseInt(thirteen.replace(" ", "")))
+                        .fourteen(Integer.parseInt(fourteen.replace(" ", "")))
+                        .fifteen(Integer.parseInt(fifteen.replace(" ", "")))
+                        .sixteen(Integer.parseInt(sixteen.replace(" ", "")))
+                        .seventeen(Integer.parseInt(seventeen.replace(" ", "")))
+                        .eighteen(Integer.parseInt(eighteen.replace(" ", "")))
+                        .nineteen(Integer.parseInt(nineteen.replace(" ", "")))
+                        .twenty(Integer.parseInt(twenty.replace(" ", "")))
+                        .twentyone(Integer.parseInt(twentyone.replace(" ", "")))
+                        .twentytwo(Integer.parseInt(twentytwo.replace(" ", "")))
+                        .fromTwentythreeToSixHour(Integer.parseInt(fromTwentythreeToSixHour.replace(" ", "")))
+                        .build();
+
+                stationTrafficList.add(stationTraffic);
+            }
+            log.info("엑셀 파일 " +count + " 개의 데이터 읽기 완료!");
+            bufferedReader.close();
+
+            // 병렬 처리를 위한 스레드 풀 생성
+            // WMIC CPU Get NumberOfCores - windows cpu 확인 명령어, cpu 수 X 2 가 좋은 성능을 얻는 경우가 많음
+            ExecutorService executor = Executors.newFixedThreadPool(8);
+            log.info("데이터 저장 시작");
+            // 리스트에 저장된 데이터를 병렬로 데이터베이스에 저장
+            count = 0;
+            for (StationTraffic stationTraffic : stationTrafficList) {
+                count++;
+                executor.execute(() -> stationTrafficRepository.save(stationTraffic));
+                log.info("데이터 저장 중...");
+            }
+            log.info(count + "개의 데이터 저장 완료!");
+            // 작업 완료 후 스레드 풀 종료
+            executor.shutdown();
+
         }catch (Exception e) {
             e.printStackTrace();
         }

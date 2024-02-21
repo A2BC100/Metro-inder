@@ -4,8 +4,10 @@ package com.example.metroinder.dataSet.dto;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Getter
+@Setter
 @NoArgsConstructor
 public class StationTrafficDto {
     private Long congestionId;
