@@ -5,19 +5,23 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.ColumnDefault;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
+
+import javax.persistence.*;
 
 @Entity
 @NoArgsConstructor
 @Getter
 @Setter
 @Builder
+@Table(name = "station_traffic",
+    indexes = {
+        @Index(name = "idx_record_date", columnList = "record_date"),
+        @Index(name = "idx_congestion_id", columnList = "congestion_id")
+    })
 public class StationTraffic extends Timestamped {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
+    @Column(name = "congestion_id")
     private Long congestionId; // primary key
     private String station; // 역이름
     private String line; // 호선
@@ -59,6 +63,7 @@ public class StationTraffic extends Timestamped {
     private int twentytwo;
     @ColumnDefault("0")
     private int fromTwentythreeToSixHour;
+    @Column(name = "record_date")
     private String recordDate; // 승하차 일자
     @Builder
     public StationTraffic(Long congestionId, String station, String line, int stationNumber, int six, int seven, int eight, int nine, int ten, int eleven, int twelve, int thirteen, int fourteen, int fifteen, int sixteen, int seventeen, int eighteen, int nineteen, int twenty, int twentyone, int twentytwo, int fromTwentythreeToSixHour, String recordDate) {

@@ -13,6 +13,7 @@ import org.deeplearning4j.nn.conf.layers.LSTM;
 import org.deeplearning4j.nn.conf.layers.RnnOutputLayer;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import org.deeplearning4j.nn.weights.WeightInit;
+import org.deeplearning4j.optimize.listeners.ScoreIterationListener;
 import org.deeplearning4j.util.ModelSerializer;
 import org.nd4j.evaluation.regression.RegressionEvaluation;
 import org.nd4j.linalg.activations.Activation;
@@ -20,9 +21,10 @@ import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.DataSet;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
 import org.nd4j.linalg.dataset.api.preprocessor.DataNormalization;
-import org.nd4j.linalg.dataset.api.preprocessor.NormalizerMinMaxScaler;
 import org.nd4j.linalg.dataset.api.preprocessor.NormalizerStandardize;
 import org.nd4j.linalg.factory.Nd4j;
+import org.nd4j.linalg.indexing.INDArrayIndex;
+import org.nd4j.linalg.indexing.NDArrayIndex;
 import org.nd4j.linalg.learning.config.Adam;
 import org.nd4j.linalg.lossfunctions.LossFunctions;
 import org.springframework.dao.DataAccessException;
@@ -31,7 +33,10 @@ import java.io.File;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.IntStream;
 
 @Slf4j
@@ -44,17 +49,40 @@ public class DeepLearningService {
         return stationTrafficRepository.findAllByOrderByRecordDateDesc();
     }
 
+    public int findStationNumber(String station, String line) {
+        return stationTrafficRepository.findStationNumber(station, line);
+    }
+
+    public StationTraffic findStationAndRecordDate(int stationNumber, String nextDate) {
+        return stationTrafficRepository.findStationAndRecordDate(stationNumber, nextDate);
+    }
+
+    public List<StationTraffic> getModelTestData() {
+        return stationTrafficRepository.getModelTestData();
+    }
+
+    public List<StationTraffic> getTrainningData() {
+        return stationTrafficRepository.getTrainningData();
+    }
+
+    public List<StationTraffic> getTestingData() {
+        return stationTrafficRepository.getTestingData();
+    }
+
+    public List<StationTraffic> getValidatingData() {
+        return stationTrafficRepository.getValidatingData();
+    }
 
     public void trainModel() {
         try {
             // 하이퍼파라미터 설정
-            int batchSize = 1; // 배치 크기 32설정, 복잡한 데이터이기 때문에 배치가 낮을 수록 좋음. 일단 1로 설정.
-            int numInputs = 18; // 시간대별 데이터 크기
-            int numOutputs = 1; // 예제에서는 출력을 사용하지 않음
+            int batchSize = 32; // 배치 크기 32설정, 복잡한 데이터이기 때문에 배치가 낮을 수록 좋음. 일단 1로 설정.
+            int numInputs = 18; // 데이터 특성 개수
+            int numOutputs = 18; // 출력
             int lstmLayerSize = 50; // LSTM 레이어의 크기
             int numEpochs = 10; // 에폭
 
-            List<StationTraffic> dataList = findAllByOrderByRecordDateDesc();
+            List<StationTraffic> dataList = getModelTestData();
             if (dataList == null || dataList.isEmpty()) {
                 log.error("데이터를 가져오지 못했습니다.");
                 return;
@@ -62,8 +90,8 @@ public class DeepLearningService {
             log.info("데이터 로드 성공");
 
             // 각 역, 호선, 일 별로 데이터 그룹화
-            Map<String, Map<String, Map<String, List<StationTraffic>>>> groupedData = groupDataByStationDayLine(dataList);
-            log.info("데이터 그룹화 성공");
+            Map<String, Map<Integer, List<StationTraffic>>> groupedData = groupedData(dataList);
+
             // 데이터셋 생성
             List<DataSet> dataSetList = createDataSet(groupedData);
             log.info("데이터셋 생성 성공");
@@ -86,11 +114,6 @@ public class DeepLearningService {
                             .nOut(lstmLayerSize) // 출력 수 설정
                             .activation(Activation.TANH) // 활성화 함수로 하이퍼볼릭 탄젠트 함수 사용
                             .build())
-                    /*.layer(new LSTM.Builder() // 첫 번째 레이어 추가, LSTM 레이어
-                            .nIn(numInputs) // 입력 수 설정
-                            .nOut(lstmLayerSize) // 출력 수 설정
-                            .activation(Activation.TANH) // 활성화 함수로 하이퍼볼릭 탄젠트 함수 사용
-                            .build())*/
                     .layer(new RnnOutputLayer.Builder(LossFunctions.LossFunction.MSE)// 두 번째 레이어 추가, RNN 출력 레이어
                             .activation(Activation.IDENTITY)// 활성화 함수로 항등 사용
                             .nIn(lstmLayerSize)// 입력 수 설정
@@ -100,7 +123,6 @@ public class DeepLearningService {
             MultiLayerNetwork net = new MultiLayerNetwork(conf);
             log.info("신경망 구성 설정 완료");
 
-            log.info("데이터 스케일링 시작...");
             // 데이터 스케일링 현재 StandardScaler
             DataNormalization normalizer = new NormalizerStandardize();
             normalizer.fit(iterator);
@@ -114,15 +136,12 @@ public class DeepLearningService {
             log.info("모델 학습 시작...");
             // 신경망 초기화 및 학습
             net.init();
+            net.setListeners(new ScoreIterationListener(1));// 손실율 확인
             net.fit(iterator, numEpochs);
             log.info("모델 학습 완료!");
 
-            //evaluateModel(iterator, numOutputs, net);
+            evaluateModel(iterator, numOutputs, net);
 
-            RegressionEvaluation eval = net.evaluateRegression(iterator);
-            log.info(eval.stats());
-
-            log.info("모델 저장 시작...");
             File modelFile = new File("MTDMProvider.zip");
             ModelSerializer.writeModel(net, modelFile, true);
             log.info("모델 저장 완료!");
@@ -136,84 +155,100 @@ public class DeepLearningService {
     }
 
     public double[] getDataArray(StationTraffic data) {
-        return new double[] {
+        double[] dataArray = new double[18];
+        dataArray[0] = data.getSix();
+        dataArray[1] = data.getSeven();
+        dataArray[2] = data.getEight();
+        dataArray[3] = data.getNine();
+        dataArray[4] = data.getTen();
+        dataArray[5] = data.getEleven();
+        dataArray[6] = data.getTwelve();
+        dataArray[7] = data.getThirteen();
+        dataArray[8] = data.getFourteen();
+        dataArray[9] = data.getFifteen();
+        dataArray[10] = data.getSixteen();
+        dataArray[11] = data.getSeventeen();
+        dataArray[12] = data.getEighteen();
+        dataArray[13] = data.getNineteen();
+        dataArray[14] = data.getTwenty();
+        dataArray[15] = data.getTwentyone();
+        dataArray[16] = data.getTwentytwo();
+        dataArray[17] = data.getFromTwentythreeToSixHour();
+        return dataArray;
+
+        /*return new double[] {
                 data.getSix(), data.getSeven(), data.getEight(), data.getNine(), data.getTen(),
                 data.getEleven(), data.getTwelve(), data.getThirteen(), data.getFourteen(),
                 data.getFifteen(), data.getSixteen(), data.getSeventeen(), data.getEighteen(),
                 data.getNineteen(), data.getTwenty(), data.getTwentyone(), data.getTwentytwo(), data.getFromTwentythreeToSixHour()
-        };
-
+        };*/
     }
 
-    public Map<String, Map<String, Map<String, List<StationTraffic>>>> groupDataByStationDayLine(List<StationTraffic> dataList) {
-        Map<String, Map<String, Map<String, List<StationTraffic>>>> groupedData = new HashMap<>();
+    public Map<String, Map<Integer, List<StationTraffic>>> groupedData(List<StationTraffic> stationTrafficList) {
+        Map<String, Map<Integer, List<StationTraffic>>> groupedData = new ConcurrentHashMap<>();
 
-        for (StationTraffic data : dataList) {
-            String recordDate = data.getRecordDate();
-            String station = data.getStation();
-            String line = data.getLine();
+        for (StationTraffic traffic : stationTrafficList) {
+            String recordDate = traffic.getRecordDate();
+            int stationNumber = traffic.getStationNumber();
 
-            groupedData.putIfAbsent(recordDate, new HashMap<>());
-            groupedData.get(recordDate).putIfAbsent(station, new HashMap<>());
-            groupedData.get(recordDate).get(station).putIfAbsent(line, new ArrayList<>());
-            groupedData.get(recordDate).get(station).get(line).add(data);
+            groupedData.computeIfAbsent(recordDate, k -> new ConcurrentHashMap<>())
+                    .computeIfAbsent(stationNumber, k -> new ArrayList<>())
+                    .add(traffic);
         }
 
         return groupedData;
     }
 
     // 데이터셋 생성
-    public List<DataSet> createDataSet(Map<String, Map<String, Map<String, List<StationTraffic>>>> groupedData) {
+    public List<DataSet> createDataSet(Map<String, Map<Integer, List<StationTraffic>>> groupedData) {
         List<DataSet> dataSetList = new ArrayList<>();
-        List<String> dataNonList = new ArrayList<>();
-        // 일별, 역별, 호선별로 병렬 처리
-        groupedData.entrySet().parallelStream().forEach(dayEntry -> {
-            dayEntry.getValue().entrySet().parallelStream().forEach(stationEntry -> {
-                stationEntry.getValue().entrySet().parallelStream().forEach(lineData -> {
-                    List<StationTraffic> lineDataList = lineData.getValue();
-                    double[][] inputArray = new double[lineDataList.size()][18];
-                    double[][] outputArray = new double[lineDataList.size()][18];
+        List<String> dataNonList = new ArrayList<>(); // 다음일 데이터가 없는 데이터 확인을 위해 임시 삽입
 
-                    IntStream.range(0, lineDataList.size()).parallel().forEach(i -> {
-                        StationTraffic data = lineDataList.get(i);
-                        log.info("데이터셋에 " + data.getRecordDate() + " " + data.getStation() + " " + data.getLine() + "호선 데이터 삽입 중");
+        groupedData.entrySet().parallelStream().forEach(dayEntry ->
+                dayEntry.getValue().entrySet().parallelStream().forEach(stationEntry -> {
+                    List<StationTraffic> stationDataList = stationEntry.getValue();
+                    int dataSize = stationDataList.size();
+                    int numFeatures = 18;
+                    int numOutputs = 18;
+                    int timeSteps = 1; // 각 데이터 포인트는 1 시간 간격으로 추출되므로
 
-                        // 입력 데이터 생성
-                        inputArray[i] = getDataArray(data);
+                    INDArray inputArray = Nd4j.create(dataSize, numFeatures, timeSteps);
+                    INDArray outputArray = Nd4j.create(dataSize, numOutputs, timeSteps);
 
-                        // 다음 날짜의 출력 데이터 조회
-                        LocalDate date = LocalDate.parse(data.getRecordDate());
-                        LocalDate nextDate = date.plusDays(1);
-                        String nextDateString = nextDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
-                        StationTraffic output = stationTrafficRepository.findLineAndStationAndRecordDate(data.getLine(), data.getStation(), nextDateString);
+                    IntStream.range(0, dataSize).parallel().forEach(i -> {
+                        StationTraffic data = stationDataList.get(i);
+                        log.info("데이터셋에 " + data.getRecordDate() + " " + data.getStationNumber() + " 데이터 삽입 중");
 
-                        // 출력 데이터 생성
+                        inputArray.put(new INDArrayIndex[]{NDArrayIndex.point(i), NDArrayIndex.all(), NDArrayIndex.point(0)},
+                                Nd4j.create(getDataArray(data)));
+
+                        LocalDate date = LocalDate.parse(dayEntry.getKey()).plusDays(1);
+                        String nextDate = date.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+                        StationTraffic output = findStationAndRecordDate(data.getStationNumber(), nextDate);
+
                         if (output == null) {
-                            dataNonList.add(data.getRecordDate() + " " + data.getStation() + " " + data.getLine());
-                            outputArray[i] = new double[18];
-                            Arrays.fill(outputArray[i], 0.0);
+                            dataNonList.add(data.getRecordDate() + " " + data.getStationNumber()); // 다음일 데이터가 없는 데이터 확인을 위해 임시 삽입
+                            outputArray.put(new INDArrayIndex[]{NDArrayIndex.point(i), NDArrayIndex.all(), NDArrayIndex.point(0)},
+                                    Nd4j.zeros(1, numOutputs, timeSteps)); // 0으로 채워진 INDArray를 추가
                         } else {
-                            outputArray[i] = getDataArray(output);
+                            outputArray.put(new INDArrayIndex[]{NDArrayIndex.point(i), NDArrayIndex.all(), NDArrayIndex.point(0)},
+                                    Nd4j.create(getDataArray(output)));
                         }
                     });
 
-                    // INDArray로 변환하여 데이터셋 생성
-                    INDArray input = Nd4j.create(inputArray);
-                    INDArray output = Nd4j.create(outputArray);
+                    dataSetList.add(new DataSet(inputArray, outputArray));
+                })
+        );
 
-                    dataSetList.add(new DataSet(input, output));
-                });
-            });
-        });
-
-        for(String noneData : dataNonList) {
+        // 다음일 데이터가 없는 데이터 확인용 로그
+        for (String noneData : dataNonList) {
             log.info(noneData);
         }
 
         return dataSetList;
     }
 
-    public void predict(String targetLine, String targetStation, String targetDate) {
+    public void predict(int stationNumber, String date) {
         // 저장된 모델 로드
         try {
             File modelFile = new File("MTDMProvider.zip");
@@ -225,7 +260,7 @@ public class DeepLearningService {
             MultiLayerNetwork net = ModelSerializer.restoreMultiLayerNetwork(modelFile);
             log.info("모델 로드 완료: {}", modelFile.getAbsolutePath());
 
-            StationTraffic previousData = stationTrafficRepository.findLineAndStationAndRecordDate(targetLine, targetStation, targetDate);
+            StationTraffic previousData = findStationAndRecordDate(stationNumber, date);
             if (previousData == null) {
                 log.error("이전 데이터를 찾을 수 없습니다.");
                 return;
@@ -254,9 +289,25 @@ public class DeepLearningService {
             // 데이터셋 이터레이터를 사용하여 모델 예측 및 평가
             while (iterator.hasNext()) {
                 DataSet testData = iterator.next();
+                if(testData == null) {
+                    log.info("testData null임");
+                    return;
+                }
                 INDArray features = testData.getFeatures();
+                if(features == null) {
+                    log.info("features null임");
+                    return;
+                }
                 INDArray labels = testData.getLabels();
+                if(labels == null) {
+                    log.info("labels null임");
+                    return;
+                }
                 INDArray predicted = net.output(features, false);
+                if(predicted == null) {
+                    log.info("predicted null임");
+                    return;
+                }
                 eval.eval(labels, predicted); // 각 데이터셋에 대해 평가 수행
             }
 

@@ -720,9 +720,9 @@ public class StationInformationSetService {
                 String recordDate = lineContents[0];
                 String line = lineContents[1];
                 String stationNumber = lineContents[2];
-                if(line == null || "".equals(line)) {
+                /*if(line == null || "".equals(line)) {
                     line = stationTrafficRepository.findLineDate(Integer.parseInt(stationNumber));
-                }
+                }*/
                 String station = lineContents[3];
                 String six = lineContents[4];
                 String seven = lineContents[5];
@@ -803,9 +803,9 @@ public class StationInformationSetService {
                 String recordDate = lineContents[0];
                 String line = lineContents[1];
                 String stationNumber = lineContents[2];
-                if(line == null || "".equals(line)) {
+                /*if(line == null || "".equals(line)) {
                     line = stationTrafficRepository.findLineDate(Integer.parseInt(stationNumber));
-                }
+                }*/
                 String station = lineContents[3];
                 String six = lineContents[4];
                 String seven = lineContents[5];

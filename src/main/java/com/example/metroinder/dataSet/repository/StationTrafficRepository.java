@@ -19,14 +19,32 @@ public interface StationTrafficRepository extends JpaRepository<StationTraffic, 
     @Query(value = "SELECT line FROM station_traffic WHERE station_number = :stationNumber ORDER BY congestion_id ASC LIMIT 1", nativeQuery = true)
     String findLineDate(@Param("stationNumber") int stationNum);
 
+
+    // 모델 학습, 데이터 셋 생성, 데이터 스케일링, 모델 평가 테스트용 데이터 가져오기
+    @Query(value = "SELECT * FROM station_traffic WHERE STR_TO_DATE(record_date, '%Y-%m-%d') BETWEEN '2018-01-01' AND '2018-12-31' ORDER BY record_date ASC, congestion_id ASC", nativeQuery = true)
+    List<StationTraffic> getModelTestData();
+
+    // 모델 학습 데이터
+    @Query(value = "SELECT * FROM station_traffic WHERE STR_TO_DATE(record_date, '%Y-%m-%d') BETWEEN '2015-01-01' AND '2021-03-19' ORDER BY record_date ASC, congestion_id ASC", nativeQuery = true)
+    List<StationTraffic> getTrainningData();
+
+    // 모델 테스트 데이터
+    @Query(value = "SELECT * FROM station_traffic WHERE STR_TO_DATE(record_date, '%Y-%m-%d') BETWEEN '2021-03-20' AND '2022-12-14' ORDER BY record_date ASC, congestion_id ASC", nativeQuery = true)
+    List<StationTraffic> getTestingData();
+
+    // 모델 검증 데이터
+    @Query(value = "SELECT * FROM station_traffic WHERE STR_TO_DATE(record_date, '%Y-%m-%d') BETWEEN '2022-12-15' AND '2023-10-30' ORDER BY record_date ASC, congestion_id ASC", nativeQuery = true)
+    List<StationTraffic> getValidatingData();
+
+    // 추후 학습용 전체 데이터 가져오기
     @Query(value = "SELECT * FROM station_traffic WHERE STR_TO_DATE(record_date, '%Y-%m-%d') BETWEEN '2015-01-01' AND '2023-10-30' ORDER BY record_date ASC, congestion_id ASC", nativeQuery = true)
     List<StationTraffic> findAllByOrderByRecordDateDesc();
 
-    @Query(value = "SELECT * FROM station_traffic WHERE line = :line and station = :station and record_date = :date", nativeQuery = true)
-    StationTraffic findLineAndStationAndRecordDate(@Param("line") String line, @Param("station") String station, @Param("date") String date);
+    @Query(value = "SELECT * FROM station_traffic WHERE station_number = :stationNumber and record_date = :date", nativeQuery = true)
+    StationTraffic findStationAndRecordDate(@Param("stationNumber") int stationNumber, @Param("date") String date);
 
-    @Query(value = "SELECT * FROM station_traffic WHERE line = :line and station LIKE :station and record_date = :date", nativeQuery = true)
-    StationTraffic findReanamedStation(@Param("line") String line, @Param("station") String station, @Param("date") String date);
+    @Query(value = "SELECT station_number FROM station_traffic WHERE line = :line and station = :station LIMIT 1", nativeQuery = true)
+    int findStationNumber(@Param("station") String station, @Param("line") String line);
 
     public static interface SameStationPeople {
         String getStation();
