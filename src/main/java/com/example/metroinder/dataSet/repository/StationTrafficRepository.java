@@ -20,10 +20,6 @@ public interface StationTrafficRepository extends JpaRepository<StationTraffic, 
     String findLineDate(@Param("stationNumber") int stationNum);
 
 
-    // 모델 학습, 데이터 셋 생성, 데이터 스케일링, 모델 평가 테스트용 데이터 가져오기
-    @Query(value = "SELECT * FROM station_traffic WHERE STR_TO_DATE(record_date, '%Y-%m-%d') BETWEEN '2018-01-01' AND '2018-12-31' ORDER BY record_date ASC, congestion_id ASC", nativeQuery = true)
-    List<StationTraffic> getModelTestData();
-
     // 모델 학습 데이터
     @Query(value = "SELECT * FROM station_traffic WHERE STR_TO_DATE(record_date, '%Y-%m-%d') BETWEEN '2015-01-01' AND '2021-03-19' ORDER BY record_date ASC, congestion_id ASC", nativeQuery = true)
     List<StationTraffic> getTrainningData();
