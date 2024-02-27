@@ -17,7 +17,8 @@ public class DeepLearningController {
     @GetMapping("test")
     public void test() {
         /* 모델 학습 후 저장 */
-        deepLearningService.configureHyperparameters();
+        //deepLearningService.configureHyperparameters();
+        deepLearningService.trainModel();
 
 //        /* 특정 호선과 특정 역에 대한 예측을 위한 입력 데이터 생성 */
 //        String targetLine = "1"; //임시

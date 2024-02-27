@@ -28,10 +28,10 @@ public class MainController {
     public void dateSet() {
         //stationInformationSetService.peopleInformationBySeoulAtTimeSave("202312");
         //stationInformationSetService.excelCongetionDataSave("C:\\Users\\iway\\Downloads\\2015~2023.csv"); // 엑셀 파일 일반 저장
-        // 이슈. classPath가 너무 길 경우, 실행이 되지 않을 수 있음. Command line is too long. Shorten command line for ServerApplication or also for Application default configuration
+        // WMIC CPU Get NumberOfCores - windows cpu 확인 명령어, cpu 수 X 2 가 좋은 성능을 얻는 경우가 많음
         stationInformationSetService.excelCongetionDataParallelizationSave("C:\\Users\\iway\\Downloads\\2015~2023.csv"); // 엑셀 파일 병렬화 저장
-        /*병렬화 저장 시에 코드 실행이 금방 끝나지만 jpa는 쿼리를 db에 보내주는거지 intellij에서 저장하는게 아님.
-          엄청난 속도로 쿼리를 DB에 보내진 상태고 저장은 되는데 시간이 걸림.
+        /*병렬화 저장 시에 코드 실행이 금방 끝나지만 JPA가 DBMS에 보낸 쿼리를 실행하는 시간은 다름.
+          엄청난 속도로 쿼리를 DB에 전송한 상태에서 저장이 완료될 때까지 시간이 꽤 걸림.
          */
     }
 
