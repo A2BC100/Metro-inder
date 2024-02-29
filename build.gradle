@@ -39,12 +39,22 @@ dependencies {
 	implementation group: 'io.jsonwebtoken', name: 'jjwt-api', version: '0.11.5'
 	implementation group: 'io.jsonwebtoken', name: 'jjwt-impl', version: '0.11.5'
 	implementation group: 'io.jsonwebtoken', name: 'jjwt-jackson', version: '0.11.5'
-	implementation 'org.nd4j:nd4j-native-platform:1.0.0-M2.1' // ND4J 라이브러리
-	implementation 'org.deeplearning4j:deeplearning4j-core:1.0.0-M2.1' // DL4J 라이브러리
-	implementation 'org.datavec:datavec-api:1.0.0-M2.1' // DataVec 라이브러리
-	implementation 'org.datavec:datavec-local:1.0.0-M2.1' // DataVec 로컬 라이브러리
-	implementation group: 'org.nd4j', name: 'nd4j-cuda-11.2-platform', version: '1.0.0-M1'
-	implementation 'org.bytedeco:javacpp:1.5.7'
+	implementation 'org.nd4j:nd4j-native-platform:1.0.0-M1.1' // ND4J 라이브러리
+	implementation 'org.deeplearning4j:deeplearning4j-core:1.0.0-M1.1' // DL4J 라이브러리
+	implementation 'org.datavec:datavec-api:1.0.0-M1.1' // DataVec 라이브러리
+	implementation 'org.datavec:datavec-local:1.0.0-M1.1' // DataVec 로컬 라이브러리
+	implementation group: 'org.deeplearning4j', name: 'deeplearning4j-cuda-11.2', version: '1.0.0-M1.1'
+	implementation group: 'org.nd4j', name: 'nd4j-cuda-11.2-platform', version: '1.0.0-M1.1'
+	implementation group: 'org.bytedeco', name: 'cuda', version: '11.2-8.1-1.5.5'
+	//implementation group: 'org.bytedeco', name: 'cuda-platform-redist', version: '11.2-8.1-1.5.5'
+	//implementation 'org.deeplearning4j:resources:1.0.0-M1.1'
+	//implementation group: 'org.bytedeco', name: 'cudnn', version: '8.0.5'
+	//implementation group: 'org.nd4j', name: 'nd4j-native-platform', version: '1.0.0-M1.1'
+
+
+	/*implementation 'org.bytedeco:javacv-platform:1.5.7'
+	'
+	implementation 'org.bytedeco:cuda-platform-redist:11.4-8.2-1.5.7'*/
 }
 
 tasks.named('test') {

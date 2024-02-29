@@ -4,12 +4,15 @@ import com.example.metroinder.dataSet.model.StationTraffic;
 import com.example.metroinder.dataSet.repository.StationTrafficRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.deeplearning4j.datasets.iterator.utilty.ListDataSetIterator;
+
+import org.deeplearning4j.datasets.iterator.impl.ListDataSetIterator;
 import org.deeplearning4j.nn.api.OptimizationAlgorithm;
+import org.deeplearning4j.nn.conf.BackpropType;
 import org.deeplearning4j.nn.conf.GradientNormalization;
 import org.deeplearning4j.nn.conf.MultiLayerConfiguration;
 import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
 import org.deeplearning4j.nn.conf.layers.LSTM;
+import org.deeplearning4j.nn.conf.layers.PReLULayer;
 import org.deeplearning4j.nn.conf.layers.RnnOutputLayer;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import org.deeplearning4j.nn.weights.WeightInit;
@@ -47,14 +50,14 @@ public class DeepLearningService {
 
     public void trainModel() {
         try {
-            System.setProperty("org.nd4j.backend", "cuda");
+            //System.setProperty("org.nd4j.backend", "cuda");
 
-            int batchSize = 1; // 배치 크기 32설정, 복잡한 데이터이기 때문에 배치가 낮을 수록 좋음. 일단 1로 설정.
+            int batchSize = 32; // 배치 크기 32설정, 복잡한 데이터이기 때문에 배치가 낮을 수록 좋음. 일단 1로 설정.
             int numInputs = 18; // 데이터 특성 개수
             int numOutputs = 18; // 출력
             int lstmLayerSize = 50; // LSTM 레이어의 크기
             double learningRate = 0.001;
-            int numEpochs = 10; // 에폭
+            int numEpochs = 5; // 에폭
 
             List<StationTraffic> dataList = stationTrafficRepository.getTrainningData();
             if (dataList == null || dataList.isEmpty()) {
@@ -88,12 +91,15 @@ public class DeepLearningService {
                             .nOut(lstmLayerSize) // 출력 수 설정
                             .activation(Activation.TANH) // 활성화 함수로 하이퍼볼릭 탄젠트 함수 사용
                             .build())
+                    /*.layer(new PReLULayer())*/ // PReLULayer의 경우 가중치가 없으므로 입력과 출력 크기 지정할 필요없음. 다만 은닉층의 활성화 함수 순서는 성능에 영향을 끼침. 순서 테스트 필요
                     .layer(new RnnOutputLayer.Builder(LossFunctions.LossFunction.MSE)// 두 번째 레이어 추가, RNN 출력 레이어
                             .activation(Activation.IDENTITY)// 활성화 함수로 항등 사용
                             .nIn(lstmLayerSize)// 입력 수 설정
                             .nOut(numOutputs)// 출력 수 설정
                             .build())
                     .build();
+
+            conf.setBackpropType(BackpropType.TruncatedBPTT);
             MultiLayerNetwork net = new MultiLayerNetwork(conf);
             log.info("신경망 구성 설정 완료");
 
@@ -218,7 +224,7 @@ public class DeepLearningService {
         return dataSetList;
     }
 
-    public void predict(int stationNumber, String date) {
+    public void predict(String station, String line, String date) {
         // 저장된 모델 로드
         try {
             File modelFile = new File("MTDMProvider.zip");
@@ -229,6 +235,8 @@ public class DeepLearningService {
 
             MultiLayerNetwork net = ModelSerializer.restoreMultiLayerNetwork(modelFile);
             log.info("모델 로드 완료: {}", modelFile.getAbsolutePath());
+
+            int stationNumber = stationTrafficRepository.findStationNumber(station, line);
 
             StationTraffic previousData = stationTrafficRepository.findStationAndRecordDate(stationNumber, date);
             if (previousData == null) {
@@ -248,6 +256,56 @@ public class DeepLearningService {
             log.error("모델 로드 중 오류 발생", e);
         }
     }
+
+    public void testModel() {
+        try {
+            File modelFile = new File("MTDMProvider.zip");
+            if (!modelFile.exists()) {
+                log.error("모델 파일이 존재하지 않습니다.");
+                return;
+            }
+
+            MultiLayerNetwork net = ModelSerializer.restoreMultiLayerNetwork(modelFile);
+
+            int batchSize = 1;
+            int numInputs = 18;
+
+            List<StationTraffic> testData = stationTrafficRepository.getTestingData();
+
+            if (testData == null || testData.isEmpty()) {
+                log.error("테스트 데이터를 가져오지 못했습니다.");
+                return;
+            }
+
+            // 각 역, 호선, 일 별로 데이터 그룹화
+            Map<String, Map<Integer, List<StationTraffic>>> groupedData = groupedData(testData);
+
+            // 데이터셋 생성
+            List<DataSet> dataSetList = createDataSet(groupedData);
+            DataSetIterator iterator = new ListDataSetIterator<>(dataSetList, batchSize);
+
+            DataNormalization normalizer = new NormalizerStandardize();
+            normalizer.fit(iterator);
+            iterator.setPreProcessor(normalizer);
+
+            RegressionEvaluation evaluation = new RegressionEvaluation();
+
+            while (iterator.hasNext()) {
+                DataSet next = iterator.next();
+                INDArray output = net.output(next.getFeatures());
+                evaluation.eval(next.getLabels(), output);
+            }
+
+            log.info("전체 평가 결과:");
+            log.info("평균 제곱 오차 (MSE): {}", evaluation.meanSquaredError(0)); // 작을수록 모델 성능 좋음
+            log.info("평균 절대 오차 (MAE): {}", evaluation.meanAbsoluteError(0)); // 작을수록 모델 성능 좋은
+            log.info("결정계수 (R2): {}", evaluation.rSquared(0)); // 1에 가까울수록 모델 성능 좋음
+
+        } catch (Exception e) {
+            log.error("모델 로드 중 오류 발생", e);
+        }
+    }
+
     public void evaluateModel(MultiLayerNetwork net, int batchSize, int numInputs) {
         List<StationTraffic> testData = stationTrafficRepository.getTestingData();
 
