@@ -43,13 +43,10 @@ dependencies {
 	implementation 'org.deeplearning4j:deeplearning4j-core:1.0.0-M1.1' // DL4J 라이브러리
 	implementation 'org.datavec:datavec-api:1.0.0-M1.1' // DataVec 라이브러리
 	implementation 'org.datavec:datavec-local:1.0.0-M1.1' // DataVec 로컬 라이브러리
-	implementation group: 'org.deeplearning4j', name: 'deeplearning4j-cuda-11.2', version: '1.0.0-M1.1'
+	/*GPU 연산하니 속도가 오히려 떨어짐. */
+	/*implementation group: 'org.deeplearning4j', name: 'deeplearning4j-cuda-11.2', version: '1.0.0-M1.1'
 	implementation group: 'org.nd4j', name: 'nd4j-cuda-11.2-platform', version: '1.0.0-M1.1'
-	implementation group: 'org.bytedeco', name: 'cuda', version: '11.2-8.1-1.5.5'
-	//implementation group: 'org.bytedeco', name: 'cuda-platform-redist', version: '11.2-8.1-1.5.5'
-	//implementation 'org.deeplearning4j:resources:1.0.0-M1.1'
-	//implementation group: 'org.bytedeco', name: 'cudnn', version: '8.0.5'
-	//implementation group: 'org.nd4j', name: 'nd4j-native-platform', version: '1.0.0-M1.1'
+	implementation group: 'org.bytedeco', name: 'cuda', version: '11.2-8.1-1.5.5'*/
 
 
 	/*implementation 'org.bytedeco:javacv-platform:1.5.7'
