@@ -12,7 +12,6 @@ import org.deeplearning4j.nn.conf.GradientNormalization;
 import org.deeplearning4j.nn.conf.MultiLayerConfiguration;
 import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
 import org.deeplearning4j.nn.conf.layers.LSTM;
-import org.deeplearning4j.nn.conf.layers.PReLULayer;
 import org.deeplearning4j.nn.conf.layers.RnnOutputLayer;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import org.deeplearning4j.nn.weights.WeightInit;
@@ -52,14 +51,15 @@ public class DeepLearningService {
         try {
             //System.setProperty("org.nd4j.backend", "cuda");
 
-            int batchSize = 32; // 배치 크기 32설정, 복잡한 데이터이기 때문에 배치가 낮을 수록 좋음. 일단 1로 설정.
+            int batchSize = 64; // 배치 크기 32설정, 복잡한 데이터이기 때문에 배치가 낮을 수록 좋음. 일단 1로 설정.
             int numInputs = 18; // 데이터 특성 개수
             int numOutputs = 18; // 출력
             int lstmLayerSize = 50; // LSTM 레이어의 크기
-            double learningRate = 0.001;
+            double learningRate = 0.001; // 학습률
             int numEpochs = 5; // 에폭
-
-            List<StationTraffic> dataList = stationTrafficRepository.getTrainningData();
+            //double dropoutRatio = 0.2; //드롭아웃 0.2~0.5
+            //List<StationTraffic> dataList = stationTrafficRepository.getTrainingData();
+            List<StationTraffic> dataList = stationTrafficRepository.getHyperTrainingData();
             if (dataList == null || dataList.isEmpty()) {
                 log.error("데이터를 가져오지 못했습니다.");
                 return;
@@ -99,7 +99,7 @@ public class DeepLearningService {
                             .build())
                     .build();
 
-            conf.setBackpropType(BackpropType.TruncatedBPTT);
+            //conf.setBackpropType(BackpropType.TruncatedBPTT);
             MultiLayerNetwork net = new MultiLayerNetwork(conf);
             log.info("신경망 구성 설정 완료");
 
@@ -117,11 +117,41 @@ public class DeepLearningService {
             net.fit(iterator, numEpochs);
             log.info("모델 학습 완료!");
 
-            evaluateModel(net, batchSize, numInputs);
+            //List<StationTraffic> testData = stationTrafficRepository.getTestingData();
+            List<StationTraffic> testData = stationTrafficRepository.getHyperTestingData();
+            if (testData == null || testData.isEmpty()) {
+                log.error("테스트 데이터를 가져오지 못했습니다.");
+                return;
+            }
+            Map<String, Map<Integer, List<StationTraffic>>> groupedTestData = groupedData(testData);
+            // 데이터셋 생성
+            List<DataSet> testDataSetList = createDataSet(groupedTestData);
+
+            evaluateModel(testDataSetList, net, batchSize);
 
             File modelFile = new File("MTDMProvider.zip");
             ModelSerializer.writeModel(net, modelFile, true);
             log.info("모델 저장 완료!");
+
+            StationTraffic previousData = stationTrafficRepository.findStationAndRecordDate(150, "2018-01-01");
+            StationTraffic predictionResult = stationTrafficRepository.findStationAndRecordDate(150, "2018-01-02");
+            if (previousData == null) {
+                log.error("이전 데이터를 찾을 수 없습니다.");
+                return;
+            }
+
+            // 입력 데이터 생성
+            double[] inputArray = getDataArray(previousData);
+            double[] resultArray = getDataArray(predictionResult);
+            INDArray result = Nd4j.create(resultArray);
+
+            INDArray input = Nd4j.create(inputArray);
+
+            // 모델을 사용하여 다음 시간대의 데이터 예측
+            INDArray output = net.output(input);
+
+            log.info("현재 승하차 인원: {}", result);
+            log.info("예측된 승하차 인원: {}", output);
         } catch (IOException e) {
             log.error("학습 중 파일 작성 오류", e);
         } catch (DataAccessException e) {
@@ -306,21 +336,11 @@ public class DeepLearningService {
         }
     }
 
-    public void evaluateModel(MultiLayerNetwork net, int batchSize, int numInputs) {
-        List<StationTraffic> testData = stationTrafficRepository.getTestingData();
-
-        if (testData == null || testData.isEmpty()) {
-            log.error("테스트 데이터를 가져오지 못했습니다.");
-            return;
-        }
-
+    public void evaluateModel(List<DataSet> testData, MultiLayerNetwork net, int batchSize) {
         try {
             // 각 역, 호선, 일 별로 데이터 그룹화
-            Map<String, Map<Integer, List<StationTraffic>>> groupedData = groupedData(testData);
 
-            // 데이터셋 생성
-            List<DataSet> dataSetList = createDataSet(groupedData);
-            DataSetIterator iterator = new ListDataSetIterator<>(dataSetList, batchSize);
+            DataSetIterator iterator = new ListDataSetIterator<>(testData, batchSize);
 
             DataNormalization normalizer = new NormalizerStandardize();
             normalizer.fit(iterator);
@@ -347,16 +367,25 @@ public class DeepLearningService {
     public void configureHyperparameters() {
         // 하이퍼파라미터 범위 정의
         int[] batchSizes = {1, 8, 16, 32};
-        double[] learningRates = {0.001, 0.01, 0.1};
+        double[] learningRates = {0.001, 0.01};
         int[] lstmLayerSizes = {50, 100, 200};
         int[] numEpochs = {5, 10, 20};
 
-        List<StationTraffic> dataList = stationTrafficRepository.getTrainningData();
+        List<StationTraffic> dataList = stationTrafficRepository.getHyperTrainingData();
         if (dataList == null || dataList.isEmpty()) {
             log.error("데이터를 가져오지 못했습니다.");
             return;
         }
         log.info("데이터 로드 성공");
+
+        List<StationTraffic> testData = stationTrafficRepository.getHyperTestingData();
+        if (testData == null || testData.isEmpty()) {
+            log.error("테스트 데이터를 가져오지 못했습니다.");
+            return;
+        }
+        Map<String, Map<Integer, List<StationTraffic>>> groupedTestData = groupedData(testData);
+        // 데이터셋 생성
+        List<DataSet> testDataSetList = createDataSet(groupedTestData);
 
         // 각 역, 호선, 일 별로 데이터 그룹화
         Map<String, Map<Integer, List<StationTraffic>>> groupedData = groupedData(dataList);
@@ -366,22 +395,24 @@ public class DeepLearningService {
         log.info("데이터셋 생성 성공");
 
         // 그리드 서치 수행
+        System.setProperty("org.nd4j.backend", "cuda");
         for(int batchSize : batchSizes) {
             for (double learningRate : learningRates) {
                 for (int lstmLayerSize : lstmLayerSizes) {
                     for (int epoch : numEpochs) {
-                        trainModelWithHyperparameters(dataSetList, batchSize, learningRate, lstmLayerSize, epoch);
+                        trainModelWithHyperparameters(dataSetList, testDataSetList, batchSize, learningRate, lstmLayerSize, epoch);
                     }
                 }
             }
         }
     }
-    public void trainModelWithHyperparameters(List<DataSet> dataSetList, int batchSize, double learningRate, int lstmLayerSize, int numEpochs) {
+    public void trainModelWithHyperparameters(List<DataSet> dataSetList, List<DataSet> testData, int batchSize, double learningRate, int lstmLayerSize, int numEpochs) {
         // 하이퍼파라미터 설정
         int numInputs = 18; // 데이터 특성 개수
         int numOutputs = 18; // 출력
 
         try {
+            log.info("시작: batchSize : " + batchSize + ", learningRate : " + learningRate + ", lstmLayerSize : " + lstmLayerSize + ", numEpochs : " + numEpochs);
             // 데이터셋 이터레이터 생성
             DataSetIterator iterator = new ListDataSetIterator<>(dataSetList, batchSize);
 
@@ -426,8 +457,28 @@ public class DeepLearningService {
             net.fit(iterator, numEpochs);
             log.info("모델 학습 완료!");
 
-            evaluateModel(net, batchSize, numInputs);
-            log.info("batchSize : " + batchSize + "learningRate : " + learningRate + ", lstmLayerSize" + ", lstmLayerSize" + ", numEpochs" + numEpochs);
+            log.info("종료: batchSize : " + batchSize + ", learningRate : " + learningRate + ", lstmLayerSize : " + lstmLayerSize + ", numEpochs : " + numEpochs);
+            evaluateModel(testData, net, batchSize);
+
+            StationTraffic previousData = stationTrafficRepository.findStationAndRecordDate(150, "2018-01-01");
+            StationTraffic predictionResult = stationTrafficRepository.findStationAndRecordDate(150, "2018-01-02");
+            if (previousData == null) {
+                log.error("이전 데이터를 찾을 수 없습니다.");
+                return;
+            }
+
+            // 입력 데이터 생성
+            double[] inputArray = getDataArray(previousData);
+            double[] resultArray = getDataArray(predictionResult);
+            INDArray result = Nd4j.create(resultArray);
+
+            INDArray input = Nd4j.create(inputArray);
+
+            // 모델을 사용하여 다음 시간대의 데이터 예측
+            INDArray output = net.output(input);
+
+            log.info("현재 승하차 인원: {}", result);
+            log.info("예측된 승하차 인원: {}", output);
         }catch (DataAccessException e) {
             log.error("데이터 엑세스 중 오류 발생, 데이터베이스 연결이 실패했습니다.", e);
         } catch (Exception e) {

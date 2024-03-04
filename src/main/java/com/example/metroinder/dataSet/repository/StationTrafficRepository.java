@@ -22,7 +22,7 @@ public interface StationTrafficRepository extends JpaRepository<StationTraffic, 
 
     // 모델 학습 데이터
     @Query(value = "SELECT * FROM station_traffic WHERE STR_TO_DATE(record_date, '%Y-%m-%d') BETWEEN '2015-01-01' AND '2021-03-19' ORDER BY record_date ASC, congestion_id ASC", nativeQuery = true)
-    List<StationTraffic> getTrainningData();
+    List<StationTraffic> getTrainingData();
 
     // 모델 테스트 데이터
     @Query(value = "SELECT * FROM station_traffic WHERE STR_TO_DATE(record_date, '%Y-%m-%d') BETWEEN '2021-03-20' AND '2022-12-14' ORDER BY record_date ASC, congestion_id ASC", nativeQuery = true)
@@ -35,6 +35,12 @@ public interface StationTrafficRepository extends JpaRepository<StationTraffic, 
     // 추후 학습용 전체 데이터 가져오기
     @Query(value = "SELECT * FROM station_traffic WHERE STR_TO_DATE(record_date, '%Y-%m-%d') BETWEEN '2015-01-01' AND '2023-10-30' ORDER BY record_date ASC, congestion_id ASC", nativeQuery = true)
     List<StationTraffic> findAllByOrderByRecordDateDesc();
+
+    @Query(value = "SELECT * FROM station_traffic WHERE STR_TO_DATE(record_date, '%Y-%m-%d') BETWEEN '2016-01-01' AND '2016-12-31' ORDER BY record_date ASC, congestion_id ASC", nativeQuery = true)
+    List<StationTraffic> getHyperTrainingData();
+
+    @Query(value = "SELECT * FROM station_traffic WHERE STR_TO_DATE(record_date, '%Y-%m-%d') BETWEEN '2017-01-01' AND '2017-12-31' ORDER BY record_date ASC, congestion_id ASC", nativeQuery = true)
+    List<StationTraffic> getHyperTestingData();
 
     @Query(value = "SELECT * FROM station_traffic WHERE station_number = :stationNumber and record_date = :date", nativeQuery = true)
     StationTraffic findStationAndRecordDate(@Param("stationNumber") int stationNumber, @Param("date") String date);
